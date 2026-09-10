@@ -1,12 +1,15 @@
 "use client";
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { baseSepolia } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { http } from 'wagmi';
 
-export const wagmiConfig = createConfig({
+export const wagmiConfig = getDefaultConfig({
+  appName: 'Onchain POAPs — Archive',
+  projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || 'c4f79cc821944d9680842e34466bfbd',
   chains: [baseSepolia],
   transports: {
     [baseSepolia.id]: http('https://sepolia.base.org'),
@@ -19,7 +22,7 @@ export function Web3Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={qc}>
-        <RainbowKitProvider theme={darkTheme({ accentColor: '#0B0F14', borderRadius: 'large' })} modalSize="compact">
+        <RainbowKitProvider modalSize="wide" initialChain={baseSepolia} showRecentTransactions={true}>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>

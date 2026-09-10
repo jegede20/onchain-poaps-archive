@@ -3,13 +3,15 @@ import { useState, useMemo } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS, getFlags, decodeContractError } from '@/lib/poap';
 import { optimizeSvg, estimateGas, formatGasCost } from '@/lib/svg-optimizer';
+import { StampStudio } from '@/components/StampStudio';
 import Link from 'next/link';
 
-const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="24" fill="#0B0F14"/><circle cx="100" cy="78" r="44" fill="#C9A66B"/><text x="100" y="145" text-anchor="middle" font-family="monospace" font-size="14" fill="white">ARCHIVE 01</text></svg>`;
+const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="24" fill="#FFFBF0"/><circle cx="100" cy="78" r="46" fill="#9B2C2C"/><circle cx="100" cy="78" r="38" fill="none" stroke="white" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8"/><text x="100" y="146" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2E1A0F">ARCHIVE 01</text></svg>`;
 
 export default function CreatePage() {
   const { isConnected } = useAccount();
   const [step, setStep] = useState(1);
+  const [artMode, setArtMode] = useState<'studio'|'paste'>('studio');
   const [name, setName] = useState('');
   const [svg, setSvg] = useState(SAMPLE_SVG);
   const [description, setDescription] = useState('');
@@ -102,12 +104,25 @@ export default function CreatePage() {
               <h2 className="font-semibold">1 — Artwork & Name</h2>
               <div>
                 <label className="text-sm font-medium">POAP name * <span className="text-muted font-normal">(1-128)</span></label>
-                <input value={name} onChange={e=>setName(e.target.value)} placeholder="ETHGlobal Paris 2026" className="mt-1 w-full rounded-xl border border-line bg-paper-elevated px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20" />
+                <input value={name} onChange={e=>setName(e.target.value)} placeholder="ETHGlobal Paris 2026" className="mt-1 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/20" />
                 <div className="text-xs text-muted mt-1">{name.length}/128</div>
               </div>
               <div>
-                <label className="text-sm font-medium">SVG artwork *</label>
-                <textarea value={svg} onChange={e=>{setSvg(e.target.value); setOptimized(null);}} rows={8} className="mt-1 w-full rounded-xl border border-line bg-paper-elevated px-4 py-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ink/20" />
+                <div className="flex gap-2 p-1 rounded-full bg-paper-muted border border-line w-fit">
+                  <button onClick={()=>setArtMode('studio')} className={`px-4 py-1.5 rounded-full text-xs font-semibold ${artMode==='studio'?'bg-brand-red text-white':'text-muted'}`}>🎨 Stamp Studio</button>
+                  <button onClick={()=>setArtMode('paste')} className={`px-4 py-1.5 rounded-full text-xs font-semibold ${artMode==='paste'?'bg-brand-red text-white':'text-muted'}`}>Upload / paste SVG</button>
+                </div>
+                {artMode==='studio' ? (
+                  <div className="mt-4">
+                    <StampStudio value={svg} onUse={(s)=>{setSvg(s); setOptimized(null); setStats(null);}} />
+                    <div className="mt-3 text-xs text-muted">Studio SVGs are hand-optimized (~1–3 KB) — cheaper than exported files. Click “Use this design” to load.</div>
+                  </div>
+                ) : (
+                  <div className="mt-4">
+                    <label className="text-sm font-medium">SVG artwork *</label>
+                    <textarea value={svg} onChange={e=>{setSvg(e.target.value); setOptimized(null);}} rows={8} className="mt-1 w-full rounded-xl border border-line bg-white px-4 py-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-red/20" />
+                  </div>
+                )}
                 <div className="mt-3 flex flex-wrap gap-2 items-center">
                   <button onClick={doOptimize} className="ghost-button text-xs">Optimize SVG (SVGO-lite)</button>
                   {stats && <span className="text-xs text-success">Saved {stats.saved} bytes ({stats.savedPct}%) • {formatGasCost(gas)}</span>}
