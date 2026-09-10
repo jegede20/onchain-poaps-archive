@@ -52,7 +52,7 @@ export default function Home() {
                   <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">Pause / Resume</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">30d creator window →</div>
                 </Link>
-                <Link href="/docs/allowlist" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
+                <Link href="/docs/allowlists" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
                   <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Allowlist</div>
                   <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">Merkle</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">One-time root →</div>

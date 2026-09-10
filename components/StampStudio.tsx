@@ -197,9 +197,9 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
   return (
     <div className="space-y-4">
       <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
-        <div className="h-[240px] sm:h-[260px] flex items-center justify-center p-5 relative overflow-hidden" style={{background:'#FFFBF0'}}>
+        <div className="h-[260px] sm:h-[280px] flex items-center justify-center p-4 relative overflow-hidden" style={{background:'#FFFBF0'}}>
           <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
-          <div className="w-full max-w-[200px] aspect-square rounded-[6px] overflow-hidden border border-line/60 shadow-sm bg-white flex items-center justify-center p-3 relative">
+          <div className="w-full max-w-[220px] sm:max-w-[230px] aspect-square flex items-center justify-center p-0 relative">
             <div dangerouslySetInnerHTML={{__html: svg}} className="w-full h-full" />
           </div>
         </div>
