@@ -151,6 +151,42 @@ export default function EventPage() {
             </div>
           </div>
 
+          {/* 4 — Creator Analytics: windows + distribution at a glance */}
+          <div className="archive-card p-4">
+            <div className="text-[11px] uppercase tracking-[0.16em] font-medium text-muted">Creator Analytics</div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="archive-inset p-3">
+                <div className="text-[11px] uppercase tracking-widest text-muted">Allowlist window</div>
+                <div className={`mt-1 text-sm font-medium ${creatorExpired?'text-danger':'text-success'}`}>{creatorExpired?'Expired':formatCountdown(creatorSec)+' left'}</div>
+                <div className="mt-2 h-1.5 rounded-full bg-line overflow-hidden"><div className="h-full bg-brand-red transition-all" style={{width: `${Math.max(4, Math.min(100, (creatorSec/(30*86400))*100))}%`, opacity: creatorExpired?0.2:1}} /></div>
+                <div className="text-[11px] text-muted mt-1">30d to set root / toggle public</div>
+              </div>
+              <div className="archive-inset p-3">
+                <div className="text-[11px] uppercase tracking-widest text-muted">Signature window</div>
+                <div className={`mt-1 text-sm font-medium ${sigExpired?'text-danger':'text-success'}`}>{sigExpired?'Expired':formatCountdown(sigSec)+' left'}</div>
+                <div className="mt-2 h-1.5 rounded-full bg-line overflow-hidden"><div className="h-full bg-ink transition-all" style={{width: `${Math.max(4, Math.min(100, (sigSec/(37*86400))*100))}%`, opacity: sigExpired?0.2:1}} /></div>
+                <div className="text-[11px] text-muted mt-1">37d for sig mint (QR)</div>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+              <span className={`px-2.5 py-1 rounded-[2px] border text-xs font-medium ${event.isPublic?'bg-success/10 border-success/20 text-success':'bg-paper-muted border-line text-muted'}`}>{event.isPublic?'Public open':'Public closed'}</span>
+              <span className={`px-2.5 py-1 rounded-[2px] border text-xs font-medium ${event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000'?'bg-brand-red text-white border-brand-red':'bg-paper-muted border-line text-muted'}`}>{event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000'?'Allowlist set':'No allowlist'}</span>
+              <span className={`px-2.5 py-1 rounded-[2px] border text-xs font-medium ${event.isSoulbound?'bg-ink text-white border-ink':'bg-paper-muted border-line text-muted'}`}>{event.isSoulbound?'Soulbound':'Transferable'}</span>
+            </div>
+          </div>
+
+          {/* 6 — Social / Collect Flex: share + copy + download */}
+          <div className="archive-card p-4">
+            <div className="text-[11px] uppercase tracking-[0.16em] font-medium text-muted">Share & Collect</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button onClick={() => { navigator.clipboard.writeText(window.location.href); setMsg('Link copied ✓'); setTimeout(()=>setMsg(null),2000); }} className="ghost-button text-xs rounded-[2px]">Copy link</button>
+              <a href={`https://warpcast.com/~/compose?text=${encodeURIComponent(`Mint my Onchain POAP — ${event.name} #${id} on Base Sepolia`)}&embeds[]=${encodeURIComponent(typeof window!=='undefined'?window.location.href:'')}`} target="_blank" className="ghost-button text-xs rounded-[2px]">Warpcast ↗</a>
+              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Mint Onchain POAP: ${event.name} #${id}`)}&url=${encodeURIComponent(typeof window!=='undefined'?window.location.href:'')}`} target="_blank" className="ghost-button text-xs rounded-[2px]">𝕏 Share</a>
+              <button onClick={() => { if(!decoded?.image) return; const a=document.createElement('a'); a.href=decoded.image; a.download=`poap-${id}.svg`; a.click(); }} className="ghost-button text-xs rounded-[2px]">Download SVG</button>
+            </div>
+            <div className="mt-2 text-xs text-muted">Links are SSTORE2 BaseSepolia • verify on BaseScan/OpenSea. MiniApp deep-link is same URL.</div>
+          </div>
+
           <div className="archive-card p-5">
             <h3 className="font-medium text-sm">Onchain verification</h3>
             <div className="mt-3 space-y-2 mono-num text-xs">

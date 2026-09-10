@@ -137,10 +137,30 @@ export default function CreatePage() {
                       <textarea value={svg} onChange={e=>{setSvg(e.target.value); setOptimized(null);}} rows={7} className="mt-1.5 w-full rounded-[2px] border border-line bg-white px-4 py-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-red/20" />
                     </div>
                   )}
-                  <div className="mt-4 flex flex-wrap gap-2 items-center">
-                    <button onClick={doOptimize} className="ghost-button text-xs rounded-[2px]">Optimize SVG (SVGO-lite)</button>
-                    {stats && <span className="text-xs text-success font-medium">Saved {stats.saved} bytes ({stats.savedPct}%) • {formatGasCost(gas)}</span>}
-                    {!stats && <span className="text-xs text-muted">{formatGasCost(gas)}</span>}
+                  {/* 5 — SVGO inline with before/after + gas — creator analytics style */}
+                  <div className="mt-4 rounded-[2px] border border-line bg-white p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-medium tracking-wide">SVGO Optimizer</div>
+                      <button onClick={doOptimize} className="ghost-button text-xs rounded-[2px] py-1.5 px-3">Optimize SVG →</button>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                      <div className="rounded-[2px] bg-paper-muted border border-line p-2">
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Original</div>
+                        <div className="text-sm font-medium mono-num">{stats ? stats.original.toLocaleString() : new Blob([svg]).size.toLocaleString()} B</div>
+                      </div>
+                      <div className="rounded-[2px] bg-paper-muted border border-line p-2">
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Optimized</div>
+                        <div className="text-sm font-medium mono-num text-ink">{new Blob([svgToUse]).size.toLocaleString()} B</div>
+                      </div>
+                      <div className={`rounded-[2px] border p-2 ${stats ? 'bg-success/10 border-success/20' : 'bg-paper-muted border-line'}`}>
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Saved</div>
+                        <div className={`text-sm font-medium mono-num ${stats ? 'text-success' : 'text-muted'}`}>{stats ? `${stats.saved} B (${stats.savedPct}%)` : '—'}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="mono-num text-muted">{formatGasCost(gas)}</span>
+                      {stats ? <span className="text-success font-medium">✓ Optimized — cheaper SSTORE2</span> : <span className="text-muted">Shrinks whitespace, comments & precision</span>}
+                    </div>
                   </div>
                   {new Blob([svgToUse]).size > 100*1024 && <div className="mt-3 text-xs text-warn bg-warn-bg border border-amber-200 rounded-[2px] px-3 py-2">Large SVG — recommend &lt;100KB (max ~120KB on Base) to avoid gas limit.</div>}
                 </div>

@@ -11,15 +11,42 @@ const PALETTES = [
   { id: 'brown-cream', bg: '#FFF4E0', accent: '#8B3A2B', ink: '#2E1A0F', label: 'Warm • Brown' },
   { id: 'ink-brass', bg: '#2E1A0F', accent: '#C9A66B', ink: '#FFFBF0', label: 'Ink • Brass' },
 ];
-const EMOJIS = ['🎉','🪙','🎪','🎤','🎧','🎨','🏆','🚀','🔥','⚡','🌍','🌊','🍕','☕','🥂','🤝','💜','🛠️','📡','🎓','🌱','🦄','👾'];
+const EMOJIS = ['🎉','🪙','��','🎤','🎧','🎨','🏆','🚀','🔥','⚡','🌍','🌊','🍕','☕','🥂','🤝','💜','🛠️','📡','🎓','🌱','🦄','👾'];
+
+function buildingIcon() {
+  // premium building vector like example — columns + dome, not emoji
+  return `<g transform="translate(100 92)">
+    <circle r="26" fill="none" stroke="#FFF8DC" stroke-width="0.7" opacity="0.0"/>
+    <g transform="translate(0 1)">
+      <!-- steps -->
+      <rect x="-14" y="9.5" width="28" height="2" rx="0.8" fill="#7A3A1A"/>
+      <rect x="-12" y="7.2" width="24" height="2" rx="0.6" fill="#8B4513"/>
+      <!-- body -->
+      <rect x="-11" y="-7" width="22" height="14.2" rx="1.2" fill="#FFFBF0" stroke="#5C2E0E" stroke-width="1.1"/>
+      <!-- columns 4 -->
+      <rect x="-8.5" y="-3.5" width="2.6" height="9" rx="0.7" fill="#D9B88A" stroke="#5C2E0E" stroke-width="0.6"/>
+      <rect x="-2.9" y="-3.5" width="2.6" height="9" rx="0.7" fill="#D9B88A" stroke="#5C2E0E" stroke-width="0.6"/>
+      <rect x="2.7" y="-3.5" width="2.6" height="9" rx="0.7" fill="#D9B88A" stroke="#5C2E0E" stroke-width="0.6"/>
+      <rect x="6.0" y="-3.5" width="2.6" height="9" rx="0.7" fill="#D9B88A" stroke="#5C2E0E" stroke-width="0.6" opacity="0"/>
+      <!-- entablature -->
+      <rect x="-11.5" y="-8.6" width="23" height="2.2" rx="0.6" fill="#8B4513"/>
+      <!-- pediment -->
+      <path d="M -13 -8.6 L 0 -15.5 L 13 -8.6 Z" fill="#FFD36A" stroke="#5C2E0E" stroke-width="1.0" stroke-linejoin="round"/>
+      <circle cx="0" cy="-10.2" r="1.1" fill="#5C2E0E" opacity="0.9"/>
+      <!-- door -->
+      <rect x="-2.2" y="1.2" width="4.4" height="5.2" rx="0.6" fill="#5C2E0E"/>
+      <rect x="-1.1" y="3.0" width="2.2" height="3.4" rx="0.4" fill="#FFFBF0" opacity="0.9"/>
+    </g>
+  </g>`;
+}
 
 export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, value: string }) {
   const [shape, setShape] = useState('scallop');
   const [palette, setPalette] = useState('cream-red');
-  const [topText, setTopText] = useState('ONCHAIN POAP');
-  const [bottomText, setBottomText] = useState('BASE SEP');
-  const [center, setCenter] = useState('🏆');
-  const [useEmoji, setUseEmoji] = useState(true);
+  const [topText, setTopText] = useState('MY EVENT 2026');
+  const [bottomText, setBottomText] = useState('ONCHAIN POAP • BASE');
+  const [center, setCenter] = useState('🏛️');
+  const [useEmoji, setUseEmoji] = useState(false);
   const pal = PALETTES.find(p=>p.id===palette)!;
 
   const svg = useMemo(()=>{
@@ -27,56 +54,148 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     const acc = pal.accent;
     const ink = pal.ink;
     const esc = (s:string)=> s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const top = esc(topText.slice(0,22));
-    const bot = esc(bottomText.slice(0,22));
-    const mid = useEmoji ? center : esc(topText.slice(0,2) || 'PO');
+    const top = esc(topText.slice(0,22) || 'MY EVENT 2026');
+    const bot = esc(bottomText.slice(0,24) || 'ONCHAIN POAP • BASE');
+    const isBuilding = center === '🏛️' || center === '🏆' || !useEmoji;
+    const midText = useEmoji && !isBuilding ? center : '';
 
-    // SCALL0P — perforated stamp, cream field, bold wax-red rings, big centered trophy
+    // premium helpers: gold gradient + filters + curved paths
+    const defs = `
+  <defs>
+    <radialGradient id="gold" cx="35%" cy="28%" r="78%">
+      <stop offset="0%" stop-color="#FFFDE7"/>
+      <stop offset="22%" stop-color="#FFE9A3"/>
+      <stop offset="52%" stop-color="#E8B84A"/>
+      <stop offset="78%" stop-color="#B7810A"/>
+      <stop offset="100%" stop-color="#7A4A00"/>
+    </radialGradient>
+    <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF8CC"/>
+      <stop offset="100%" stop-color="#9A6B00"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#2E1A0F" flood-opacity="0.18"/>
+    </filter>
+    <path id="topArc" d="M 38 78.5 A 66 66 0 0 1 162 78.5"/>
+    <path id="botArc" d="M 46 141.5 A 62 62 0 0 0 154 141.5"/>
+  </defs>`;
+
+    const paperTexture = `<g opacity="0.06" fill="${acc}">${Array.from({length: 120}).map((_,i)=> {
+      const x = 14 + (i*37)%172; const y = 14 + (i*57)%172; return `<circle cx="${x}" cy="${y}" r="${0.7 + (i%3)*0.3}"/>`;
+    }).join('')}</g>`;
+
+    // outer scalloped cream like example — 32 teeth, warm
+    const scallopOuter = (()=> {
+      const teeth = 32;
+      let d = '';
+      for(let i=0;i<teeth;i++){
+        const a0 = (i/teeth)*360 -90;
+        const a1 = ((i+0.5)/teeth)*360 -90;
+        const a2 = ((i+1)/teeth)*360 -90;
+        const rBase = 88; const rTip = 94;
+        const x0 = (100 + rBase*Math.cos(a0*Math.PI/180)).toFixed(1);
+        const y0 = (100 + rBase*Math.sin(a0*Math.PI/180)).toFixed(1);
+        const xm = (100 + rTip*Math.cos(a1*Math.PI/180)).toFixed(1);
+        const ym = (100 + rTip*Math.sin(a1*Math.PI/180)).toFixed(1);
+        const x1 = (100 + rBase*Math.cos(a2*Math.PI/180)).toFixed(1);
+        const y1 = (100 + rBase*Math.sin(a2*Math.PI/180)).toFixed(1);
+        if(i===0) d += `M ${x0} ${y0} `;
+        d += `Q ${xm} ${ym} ${x1} ${y1} `;
+      }
+      d += 'Z';
+      return `<path d="${d}" fill="#F8E8C8" stroke="#E8D5B5" stroke-width="0.9"/>`;
+    })();
+
+    const redPetalWreath = Array.from({length:14}).map((_,i)=>{
+      const a = i*25.714 -90;
+      const x = 100 + 38*Math.cos(a*Math.PI/180);
+      const y = 100 + 38*Math.sin(a*Math.PI/180);
+      return `<g transform="rotate(${a+90} ${x.toFixed(1)} ${y.toFixed(1)})"><path d="M ${x.toFixed(1)} ${(y-7).toFixed(1)} Q ${(x+4).toFixed(1)} ${y.toFixed(1)} ${x.toFixed(1)} ${(y+7).toFixed(1)} Q ${(x-4).toFixed(1)} ${y.toFixed(1)} ${x.toFixed(1)} ${(y-7).toFixed(1)} Z" fill="${acc}" opacity="0.98"/></g>`;
+    }).join('');
+
+    const dashedInner = `<circle cx="100" cy="100" r="54.5" fill="none" stroke="${acc}" stroke-width="0.75" stroke-dasharray="3.4 4.2" opacity="0.72"/>
+  <circle cx="100" cy="100" r="49.2" fill="none" stroke="${ink}" stroke-width="0.55" stroke-dasharray="1.2 7" opacity="0.18"/>`;
+
+    const dottedLine = `<g stroke="${acc}" stroke-width="1.05" stroke-linecap="round" opacity="0.42" stroke-dasharray="1.6 3.2">
+      <line x1="62" y1="123.5" x2="138" y2="123.5"/>
+    </g>`;
+
+    // scallop premium — example-like, cream gear + red petals + gold coin + curved text
     if (shape==='scallop') {
-      const dots = Array.from({length: 28}).map((_,i)=>{
-        const a=i*12.857*Math.PI/180;
-        return `<circle cx="${(100+88*Math.cos(a)).toFixed(1)}" cy="${(100+88*Math.sin(a)).toFixed(1)}" r="4.4"/>`;
-      }).join('');
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  ${defs}
   <rect width="200" height="200" rx="22" fill="${bg}"/>
-  <g fill="${acc}" opacity="0.10">${dots}</g>
-  <circle cx="100" cy="100" r="73.5" fill="none" stroke="${acc}" stroke-width="3.2"/>
-  <circle cx="100" cy="100" r="66.5" fill="none" stroke="${acc}" stroke-width="1.1" stroke-dasharray="5 4.5" opacity="0.58"/>
-  <circle cx="100" cy="100" r="51.5" fill="white" stroke="${acc}" stroke-width="1.15"/>
-  <text x="100" y="66.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.5" font-weight="800" letter-spacing="1.7" fill="${ink}">${top}</text>
-  <text x="100" y="111" text-anchor="middle" dominant-baseline="middle" font-size="46" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,0.06))">${mid}</text>
-  <text x="100" y="143.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.6" font-weight="700" letter-spacing="1.25" fill="${ink}">${bot}</text>
+  ${paperTexture}
+  ${scallopOuter}
+  <circle cx="100" cy="100" r="68.5" fill="white" stroke="#F0DDC8" stroke-width="0.9"/>
+  <circle cx="100" cy="100" r="64.2" fill="none" stroke="${acc}" stroke-width="1.15" opacity="0.95"/>
+  ${redPetalWreath}
+  ${dashedInner}
+  <!-- curved top / bottom — arch like example MY EVENT 2026 -->
+  <text fill="${acc}" font-family="Cormorant Garamond, Georgia, serif" font-size="11.2" font-weight="700" letter-spacing="1.8" text-anchor="middle">
+    <textPath href="#topArc" startOffset="50%" dominant-baseline="middle">${top}</textPath>
+  </text>
+  <!-- gold medallion -->
+  <g filter="url(#softShadow)">
+    <circle cx="100" cy="92" r="30.5" fill="url(#gold)" stroke="url(#goldEdge)" stroke-width="1.6"/>
+    <circle cx="100" cy="92" r="27.2" fill="none" stroke="white" stroke-width="0.9" opacity="0.55"/>
+    <circle cx="100" cy="92" r="25.6" fill="none" stroke="#7A4A00" stroke-width="0.35" opacity="0.32"/>
+  </g>
+  ${isBuilding ? buildingIcon() : `<text x="100" y="96.5" text-anchor="middle" dominant-baseline="middle" font-size="30">${midText}</text>`}
+  ${dottedLine}
+  <text fill="${acc}" font-family="Inter, ui-sans-serif, system-ui" font-size="6.8" font-weight="600" letter-spacing="1.55" text-anchor="middle" opacity="0.95">
+    <textPath href="#botArc" startOffset="50%" dominant-baseline="middle">${bot}</textPath>
+  </text>
 </svg>`;
     }
-    // GEAR — notched badge, sharp teeth, centered art
+
     if (shape==='gear') {
+      const gearPath = `M100 24.5 L104.8 38.2 L119.5 32.8 L122.8 46.8 L138.2 47.2 L133.2 61.2 L148.2 68.5 L141 81.2 L154.2 92.2 L141 103.2 L148.2 116 L133.2 123.2 L138.2 137.2 L122.8 137.6 L119.5 151.5 L104.8 146.2 L100 160.5 L95.2 146.2 L80.5 151.5 L77.2 137.6 L61.8 137.2 L66.8 123.2 L51.8 116 L59 103.2 L45.8 92.2 L59 81.2 L51.8 68.5 L66.8 61.2 L61.8 47.2 L77.2 46.8 L80.5 32.8 L95.2 38.2 Z`;
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  ${defs}
   <rect width="200" height="200" rx="22" fill="${bg}"/>
-  <path d="M100 30.5 L104.2 43.2 L117.5 38.3 L120.4 51.0 L134.0 51.6 L130.0 64.6 L143.2 70.8 L136.6 82.6 L148.2 93.2 L136.6 103.8 L143.2 115.6 L130.0 121.8 L134.0 134.8 L120.4 135.4 L117.5 148.1 L104.2 143.2 L100 155.9 L95.8 143.2 L82.5 148.1 L79.6 135.4 L66 134.8 L70 121.8 L56.8 115.6 L63.4 103.8 L51.8 93.2 L63.4 82.6 L56.8 70.8 L70 64.6 L66 51.6 L79.6 51.0 L82.5 38.3 L95.8 43.2 Z" fill="${acc}"/>
-  <circle cx="100" cy="93.2" r="47.2" fill="white" stroke="${acc}" stroke-width="1.9"/>
-  <circle cx="100" cy="93.2" r="47.2" fill="none" stroke="${acc}" stroke-width="0.7" opacity="0.13"/>
-  <text x="100" y="76.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.2" font-weight="800" letter-spacing="1.5" fill="${ink}">${esc(topText.slice(0,15))}</text>
-  <text x="100" y="101.5" text-anchor="middle" dominant-baseline="middle" font-size="40">${mid}</text>
-  <text x="100" y="122.2" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.4" font-weight="700" letter-spacing="1.1" fill="${ink}">${esc(bottomText.slice(0,16))}</text>
+  ${paperTexture}
+  <path d="${gearPath}" fill="#F1DCC0" stroke="#E0C7A6" stroke-width="0.9"/>
+  <circle cx="100" cy="92.2" r="56" fill="white" stroke="#F0DDC8" stroke-width="0.9"/>
+  <circle cx="100" cy="92.2" r="52.2" fill="none" stroke="${acc}" stroke-width="1.1"/>
+  ${Array.from({length:14}).map((_,i)=>{
+    const a=i*25.714-90; const x=100+34*Math.cos(a*Math.PI/180); const y=92.2+34*Math.sin(a*Math.PI/180);
+    return `<path d="M ${x.toFixed(1)} ${(y-6).toFixed(1)} Q ${(x+3.2).toFixed(1)} ${y.toFixed(1)} ${x.toFixed(1)} ${(y+6).toFixed(1)} Q ${(x-3.2).toFixed(1)} ${y.toFixed(1)} ${x.toFixed(1)} ${(y-6).toFixed(1)} Z" fill="${acc}" opacity="0.95"/>`;
+  }).join('')}
+  ${dashedInner.replace('100" cy="100"','100" cy="92.2"').replace('100" cy="100"','100" cy="92.2"')}
+  <text fill="${acc}" font-family="Cormorant Garamond, Georgia, serif" font-size="11" font-weight="700" letter-spacing="1.7" text-anchor="middle"><textPath href="#topArc" startOffset="50%">${top}</textPath></text>
+  <g filter="url(#softShadow)">
+    <circle cx="100" cy="90.5" r="28.5" fill="url(#gold)" stroke="url(#goldEdge)" stroke-width="1.5"/>
+    <circle cx="100" cy="90.5" r="25.6" fill="none" stroke="white" stroke-width="0.85" opacity="0.55"/>
+  </g>
+  ${isBuilding ? buildingIcon().replace('translate(100 92)','translate(100 90.5)') : `<text x="100" y="94.5" text-anchor="middle" dominant-baseline="middle" font-size="28">${midText}</text>`}
+  <text fill="${acc}" font-family="Inter, ui-sans-serif, system-ui" font-size="6.6" font-weight="600" letter-spacing="1.45" text-anchor="middle" opacity="0.95"><textPath href="#botArc" startOffset="50%">${bot}</textPath></text>
 </svg>`;
     }
-    // CLASSIC — clean double ring, generous white field
+
+    // classic — minimalist double ring but still gold medallion + curved text
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  ${defs}
   <rect width="200" height="200" rx="22" fill="${bg}"/>
-  <circle cx="100" cy="100" r="77.5" fill="none" stroke="${acc}" stroke-width="2.9"/>
-  <circle cx="100" cy="100" r="69.8" fill="none" stroke="${acc}" stroke-width="1.05" stroke-dasharray="6 4.2" opacity="0.52"/>
-  <circle cx="100" cy="100" r="52.8" fill="white"/>
-  <circle cx="100" cy="100" r="52.8" fill="none" stroke="${acc}" stroke-width="0.9" opacity="0.14"/>
-  <text x="100" y="70.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.2" font-weight="800" letter-spacing="1.6" fill="${ink}">${esc(topText.slice(0,18))}</text>
-  <text x="100" y="109.5" text-anchor="middle" dominant-baseline="middle" font-size="44">${mid}</text>
-  <text x="100" y="142.2" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.6" font-weight="700" letter-spacing="1.2" fill="${ink}">${esc(bottomText.slice(0,18))}</text>
+  ${paperTexture}
+  <circle cx="100" cy="100" r="78" fill="none" stroke="${acc}" stroke-width="2.9"/>
+  <circle cx="100" cy="100" r="71.5" fill="none" stroke="${acc}" stroke-width="0.9" stroke-dasharray="5.5 5" opacity="0.48"/>
+  <circle cx="100" cy="100" r="58" fill="white" stroke="#F0DDC8" stroke-width="0.8"/>
+  <circle cx="100" cy="100" r="58" fill="none" stroke="${acc}" stroke-width="0.42" opacity="0.18"/>
+  <text fill="${acc}" font-family="Cormorant Garamond, Georgia, serif" font-size="10.8" font-weight="700" letter-spacing="1.6" text-anchor="middle"><textPath href="#topArc" startOffset="50%">${esc(topText.slice(0,18))}</textPath></text>
+  <g filter="url(#softShadow)">
+    <circle cx="100" cy="92" r="29.2" fill="url(#gold)" stroke="url(#goldEdge)" stroke-width="1.45"/>
+    <circle cx="100" cy="92" r="26.2" fill="none" stroke="white" stroke-width="0.8" opacity="0.52"/>
+  </g>
+  ${isBuilding ? buildingIcon() : `<text x="100" y="95.5" text-anchor="middle" dominant-baseline="middle" font-size="30">${midText}</text>`}
+  ${dottedLine}
+  <text fill="${acc}" font-family="Inter, ui-sans-serif, system-ui" font-size="6.6" font-weight="600" letter-spacing="1.45" text-anchor="middle" opacity="0.94"><textPath href="#botArc" startOffset="50%">${esc(bottomText.slice(0,20))}</textPath></text>
 </svg>`;
   }, [shape, palette, topText, bottomText, center, useEmoji, pal]);
 
   const estBytes = new Blob([svg]).size;
   return (
     <div className="space-y-4">
-      {/* REVERTED to warm paper — not tall, a little bit tall (240-260px) */}
       <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
         <div className="h-[240px] sm:h-[260px] flex items-center justify-center p-5 relative overflow-hidden" style={{background:'#FFFBF0'}}>
           <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
@@ -128,16 +247,19 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
               <button key={e} onClick={()=>{setCenter(e); setUseEmoji(true);}} className={`w-9 h-9 rounded-[2px] border flex items-center justify-center text-lg ${center===e && useEmoji ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line hover:border-brass'}`}>{e}</button>
             ))}
           </div>
-          <label className="mt-3 flex items-center gap-2 text-xs"><input type="checkbox" checked={useEmoji} onChange={e=>setUseEmoji(e.target.checked)} /> Use emoji/initials as center</label>
+          <div className="mt-2 flex items-center gap-3">
+            <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={useEmoji} onChange={e=>setUseEmoji(e.target.checked)} /> Use emoji as center</label>
+            <span className="text-xs text-muted">Default is hand-drawn building (premium, not emoji)</span>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium">Top text ({topText.length}/22)</label>
-            <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="ONCHAIN POAP" />
+            <label className="text-xs font-medium">Top arc text ({topText.length}/22)</label>
+            <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="MY EVENT 2026" />
           </div>
           <div>
-            <label className="text-xs font-medium">Bottom text ({bottomText.length}/22)</label>
-            <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="BASE SEP" />
+            <label className="text-xs font-medium">Bottom arc text ({bottomText.length}/24)</label>
+            <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,24))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="ONCHAIN POAP • BASE" />
           </div>
         </div>
       </div>

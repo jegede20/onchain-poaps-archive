@@ -47,21 +47,21 @@ export default function Home() {
                 <Link href="/docs" className="ghost-button text-[15px] px-6">Read Docs</Link>
               </div>
               <div className="mt-10 grid grid-cols-3 gap-3 max-w-[520px]">
-                <div className="archive-card p-4 interactive-card group">
+                <Link href="/docs/public-minting" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
                   <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Public</div>
-                  <div className="mt-1 font-medium text-sm tracking-wide">Pause / Resume</div>
-                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">30d creator window</div>
-                </div>
-                <div className="archive-card p-4 interactive-card group">
+                  <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">Pause / Resume</div>
+                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">30d creator window →</div>
+                </Link>
+                <Link href="/docs/allowlist" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
                   <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Allowlist</div>
-                  <div className="mt-1 font-medium text-sm tracking-wide">Merkle</div>
-                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">One-time root</div>
-                </div>
-                <div className="archive-card p-4 interactive-card group">
+                  <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">Merkle</div>
+                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">One-time root →</div>
+                </Link>
+                <Link href="/docs/signature-minting" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
                   <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Signature</div>
-                  <div className="mt-1 font-medium text-sm tracking-wide">37d</div>
-                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">QR for events</div>
-                </div>
+                  <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">37d</div>
+                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">QR for events →</div>
+                </Link>
               </div>
             </div>
             <div className="w-full lg:w-[420px] shrink-0">
