@@ -26,28 +26,63 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     const bg = pal.bg;
     const acc = pal.accent;
     const ink = pal.ink;
-    // Build scalloped stamp via patterned circle
+    const esc = (s:string)=> s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const top = esc(topText.slice(0,22));
+    const bot = esc(bottomText.slice(0,22));
+    const mid = useEmoji ? center : esc(topText.slice(0,2) || 'PO');
+
+    // SCALL0P — perforated stamp, cream field, bold wax-red rings, big centered trophy
     if (shape==='scallop') {
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="20" fill="${bg}"/><g fill="${acc}" opacity="0.08">${Array.from({length: 24}).map((_,i)=>{const a=i*15*Math.PI/180; return `<circle cx="${100+92*Math.cos(a)}" cy="${100+92*Math.sin(a)}" r="5"/>`}).join('')}</g><circle cx="100" cy="100" r="78" fill="none" stroke="${acc}" stroke-width="3" stroke-dasharray="0"/><circle cx="100" cy="100" r="71" fill="none" stroke="${acc}" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.6"/><circle cx="100" cy="100" r="56" fill="white" stroke="${acc}" stroke-width="1"/><text x="100" y="72" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="1.2" fill="${ink}">${topText.slice(0,22)}</text><text x="100" y="122" text-anchor="middle" font-size="34">${useEmoji ? center : topText.slice(0,2)}</text><text x="100" y="145" text-anchor="middle" font-size="8" font-weight="600" letter-spacing="1" fill="${ink}">${bottomText.slice(0,22)}</text><circle cx="100" cy="100" r="78" fill="none" stroke="${acc}" stroke-width="1" opacity="0.15"/></svg>`;
+      const dots = Array.from({length: 28}).map((_,i)=>{
+        const a=i*12.857*Math.PI/180;
+        return `<circle cx="${(100+88*Math.cos(a)).toFixed(1)}" cy="${(100+88*Math.sin(a)).toFixed(1)}" r="4.4"/>`;
+      }).join('');
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <rect width="200" height="200" rx="22" fill="${bg}"/>
+  <g fill="${acc}" opacity="0.10">${dots}</g>
+  <circle cx="100" cy="100" r="73.5" fill="none" stroke="${acc}" stroke-width="3.2"/>
+  <circle cx="100" cy="100" r="66.5" fill="none" stroke="${acc}" stroke-width="1.1" stroke-dasharray="5 4.5" opacity="0.58"/>
+  <circle cx="100" cy="100" r="51.5" fill="white" stroke="${acc}" stroke-width="1.15"/>
+  <text x="100" y="66.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.5" font-weight="800" letter-spacing="1.7" fill="${ink}">${top}</text>
+  <text x="100" y="111" text-anchor="middle" dominant-baseline="middle" font-size="46" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,0.06))">${mid}</text>
+  <text x="100" y="143.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.6" font-weight="700" letter-spacing="1.25" fill="${ink}">${bot}</text>
+</svg>`;
     }
+    // GEAR — notched badge, sharp teeth, centered art
     if (shape==='gear') {
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="24" fill="${bg}"/><path d="M100 36 L104 48 L116 44 L118 56 L130 58 L126 70 L138 76 L132 88 L144 96 L132 104 L138 116 L126 122 L130 134 L118 136 L116 148 L104 144 L100 156 L96 144 L84 148 L82 136 L70 134 L74 122 L62 116 L68 104 L56 96 L68 88 L62 76 L74 70 L70 58 L82 56 L84 44 L96 48 Z" fill="${acc}"/><circle cx="100" cy="96" r="44" fill="white" stroke="${acc}" stroke-width="2"/><text x="100" y="86" text-anchor="middle" font-size="10" font-weight="700" fill="${ink}">${topText.slice(0,14)}</text><text x="100" y="106" text-anchor="middle" font-size="22">${useEmoji ? center : '★'}</text><text x="100" y="124" text-anchor="middle" font-size="8" fill="${ink}">${bottomText.slice(0,16)}</text></svg>`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <rect width="200" height="200" rx="22" fill="${bg}"/>
+  <path d="M100 30.5 L104.2 43.2 L117.5 38.3 L120.4 51.0 L134.0 51.6 L130.0 64.6 L143.2 70.8 L136.6 82.6 L148.2 93.2 L136.6 103.8 L143.2 115.6 L130.0 121.8 L134.0 134.8 L120.4 135.4 L117.5 148.1 L104.2 143.2 L100 155.9 L95.8 143.2 L82.5 148.1 L79.6 135.4 L66 134.8 L70 121.8 L56.8 115.6 L63.4 103.8 L51.8 93.2 L63.4 82.6 L56.8 70.8 L70 64.6 L66 51.6 L79.6 51.0 L82.5 38.3 L95.8 43.2 Z" fill="${acc}"/>
+  <circle cx="100" cy="93.2" r="47.2" fill="white" stroke="${acc}" stroke-width="1.9"/>
+  <circle cx="100" cy="93.2" r="47.2" fill="none" stroke="${acc}" stroke-width="0.7" opacity="0.13"/>
+  <text x="100" y="76.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.2" font-weight="800" letter-spacing="1.5" fill="${ink}">${esc(topText.slice(0,15))}</text>
+  <text x="100" y="101.5" text-anchor="middle" dominant-baseline="middle" font-size="40">${mid}</text>
+  <text x="100" y="122.2" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.4" font-weight="700" letter-spacing="1.1" fill="${ink}">${esc(bottomText.slice(0,16))}</text>
+</svg>`;
     }
-    // classic
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="24" fill="${bg}"/><circle cx="100" cy="100" r="80" fill="none" stroke="${acc}" stroke-width="2.5"/><circle cx="100" cy="100" r="72" fill="none" stroke="${acc}" stroke-width="1" stroke-dasharray="6 4" opacity="0.5"/><circle cx="100" cy="100" r="54" fill="white"/><text x="100" y="75" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="1.4" fill="${ink}">${topText.slice(0,18)}</text><text x="100" y="110" text-anchor="middle" font-size="30">${useEmoji ? center : 'POAP'}</text><text x="100" y="132" text-anchor="middle" font-size="8" fill="${ink}">${bottomText.slice(0,18)}</text></svg>`;
+    // CLASSIC — clean double ring, generous white field
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <rect width="200" height="200" rx="22" fill="${bg}"/>
+  <circle cx="100" cy="100" r="77.5" fill="none" stroke="${acc}" stroke-width="2.9"/>
+  <circle cx="100" cy="100" r="69.8" fill="none" stroke="${acc}" stroke-width="1.05" stroke-dasharray="6 4.2" opacity="0.52"/>
+  <circle cx="100" cy="100" r="52.8" fill="white"/>
+  <circle cx="100" cy="100" r="52.8" fill="none" stroke="${acc}" stroke-width="0.9" opacity="0.14"/>
+  <text x="100" y="70.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.2" font-weight="800" letter-spacing="1.6" fill="${ink}">${esc(topText.slice(0,18))}</text>
+  <text x="100" y="109.5" text-anchor="middle" dominant-baseline="middle" font-size="44">${mid}</text>
+  <text x="100" y="142.2" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.6" font-weight="700" letter-spacing="1.2" fill="${ink}">${esc(bottomText.slice(0,18))}</text>
+</svg>`;
   }, [shape, palette, topText, bottomText, center, useEmoji, pal]);
 
   const estBytes = new Blob([svg]).size;
   return (
     <div className="space-y-4">
+      {/* REVERTED to warm paper — not tall, a little bit tall (240-260px) */}
       <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
-        <div className="h-[220px] sm:h-[260px] bg-black flex items-center justify-center p-4 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.15]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize:'18px 18px'}} />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent" />
-          <div className="w-full max-w-[180px] aspect-square rounded-[2px] overflow-hidden border border-white/20 shadow-2xl bg-white flex items-center justify-center p-2 relative">
+        <div className="h-[240px] sm:h-[260px] flex items-center justify-center p-5 relative overflow-hidden" style={{background:'#FFFBF0'}}>
+          <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
+          <div className="w-full max-w-[200px] aspect-square rounded-[6px] overflow-hidden border border-line/60 shadow-sm bg-white flex items-center justify-center p-3 relative">
             <div dangerouslySetInnerHTML={{__html: svg}} className="w-full h-full" />
           </div>
-          <div className="absolute top-3 left-3 px-2 py-1 rounded-[2px] bg-white/10 backdrop-blur border border-white/20 text-[10px] text-white mono-num">LIVE PREVIEW</div>
         </div>
         <div className="p-3 flex items-center justify-between bg-white border-t border-line">
           <div className="text-xs mono-num text-muted">{estBytes.toLocaleString()} bytes • ~{estBytes < 3000 ? 'tiny' : estBytes < 6000 ? 'gas-friendly' : 'large'}</div>
@@ -98,11 +133,11 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium">Top text ({topText.length}/22)</label>
-            <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-xl border border-line px-3 py-2 text-sm" placeholder="ONCHAIN POAP" />
+            <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="ONCHAIN POAP" />
           </div>
           <div>
             <label className="text-xs font-medium">Bottom text ({bottomText.length}/22)</label>
-            <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-xl border border-line px-3 py-2 text-sm" placeholder="BASE SEP" />
+            <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="BASE SEP" />
           </div>
         </div>
       </div>
