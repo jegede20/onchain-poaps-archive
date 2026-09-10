@@ -40,7 +40,7 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
 
     const defs = `
   <defs>
-    <path id="topArc" d="M 38 76.5 A 62 62 0 0 1 162 76.5"/>
+    <path id="topArc" d="M 48 84.5 A 58 58 0 0 1 152 84.5"/>
     <path id="bannerPath" d="M 58 121.5 H 142"/>
     <filter id="goldShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="1.2" stdDeviation="1.3" flood-color="#000" flood-opacity="0.35"/>
@@ -71,26 +71,26 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
 
     const outer = shape==='scallop' ? serratedOuter : shape==='gear' ? gearOuter : smoothOuter;
 
-    // laurels — simple 5 leaves per side, gold
-    const laurelLeft = [82,89,97,105,112].map((y,i)=>{
-      const x = 68 - i*0.6; const s = 0.9 - i*0.05; const rot = -18 + i*4;
-      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 -7 C 3.2 -3 3.2 3 0 7 C -3.2 3 -3.2 -3 0 -7 Z M0 -7 C 1.2 -3 1.2 3 0 7" fill="${goldLight}" stroke="${goldDeep}" stroke-width="0.4" stroke-linejoin="round"/><path d="M0 0 L 6 1" stroke="${goldDeep}" stroke-width="0.35" opacity="0.9"/></g>`;
+    // laurels — 5 leaves per side, gold — made bigger and clearer (1.15 scale, thicker stroke)
+    const laurelLeft = [88,95,103,111,118].map((y,i)=>{
+      const x = 68 - i*0.5; const s = 1.15 - i*0.06; const rot = -16 + i*3;
+      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="${goldLight}" stroke="${goldDeep}" stroke-width="0.55" stroke-linejoin="round"/><path d="M0 0 L 6.5 1.1" stroke="${goldDeep}" stroke-width="0.45" opacity="0.95"/></g>`;
     }).join('');
-    const laurelRight = [82,89,97,105,112].map((y,i)=>{
-      const x = 132 + i*0.6; const s = 0.9 - i*0.05; const rot = 18 - i*4;
-      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 -7 C 3.2 -3 3.2 3 0 7 C -3.2 3 -3.2 -3 0 -7 Z M0 -7 C 1.2 -3 1.2 3 0 7" fill="${goldLight}" stroke="${goldDeep}" stroke-width="0.4"/><path d="M0 0 L -6 1" stroke="${goldDeep}" stroke-width="0.35" opacity="0.9"/></g>`;
+    const laurelRight = [88,95,103,111,118].map((y,i)=>{
+      const x = 132 + i*0.5; const s = 1.15 - i*0.06; const rot = 16 - i*3;
+      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="${goldLight}" stroke="${goldDeep}" stroke-width="0.55"/><path d="M0 0 L -6.5 1.1" stroke="${goldDeep}" stroke-width="0.45" opacity="0.95"/></g>`;
     }).join('');
 
-    // star field — 8 tiny gold stars
+    // star field — 8 tiny gold stars — bigger (3px) and higher opacity so tiny designs show well
     const stars = [
-      [78,66],[122,66],[88,72],[112,72],[72,94],[128,94],[84,106],[116,106]
-    ].map(([x,y])=> `<g transform="translate(${x} ${y})"><path d="M0 -2.2 L0.7 -0.7 L2.2 0 L0.7 0.7 L0 2.2 L-0.7 0.7 L-2.2 0 L-0.7 -0.7 Z" fill="${goldLight}" opacity="0.95"/><circle cx="0" cy="0" r="0.35" fill="${goldDeep}" opacity="0.9"/></g>`).join('');
+      [76,68],[124,68],[86,73],[114,73],[72,96],[128,96],[83,108],[117,108]
+    ].map(([x,y])=> `<g transform="translate(${x} ${y})"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="${goldLight}" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="${goldDeep}" opacity="0.95"/></g>`).join('');
 
-    // central dark enamel
-    const innerDark = `<circle cx="100" cy="100" r="71.5" fill="${dark}" stroke="${gold}" stroke-width="1.4"/>
-  <circle cx="100" cy="100" r="69.2" fill="none" stroke="${goldLight}" stroke-width="0.45" opacity="0.35"/>
-  <circle cx="100" cy="100" r="52.8" fill="none" stroke="${gold}" stroke-width="0.45" stroke-dasharray="1.6 4.2" opacity="0.42"/>
-  <circle cx="100" cy="100" r="48.5" fill="none" stroke="${goldLight}" stroke-width="0.35" stroke-dasharray="0.8 6" opacity="0.18"/>`;
+    // central dark enamel — big but not very big (73.5, was 71.5)
+    const innerDark = `<circle cx="100" cy="100" r="73.5" fill="${dark}" stroke="${gold}" stroke-width="1.5"/>
+  <circle cx="100" cy="100" r="71.2" fill="none" stroke="${goldLight}" stroke-width="0.5" opacity="0.38"/>
+  <circle cx="100" cy="100" r="55.2" fill="none" stroke="${gold}" stroke-width="0.5" stroke-dasharray="1.8 4" opacity="0.48"/>
+  <circle cx="100" cy="100" r="50.5" fill="none" stroke="${goldLight}" stroke-width="0.4" stroke-dasharray="0.9 5.5" opacity="0.22"/>`;
 
     // banner — ONCHAIN • POAP • BASE
     const bannerBox = `<g filter="url(#goldShadow)">
