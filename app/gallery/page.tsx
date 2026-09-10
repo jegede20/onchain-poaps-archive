@@ -7,6 +7,8 @@ import { useState } from 'react';
 export default function GalleryPage() {
   const { address } = useAccount();
   const [tab, setTab] = useState<'all'|'owned'>('all');
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState<'recent'|'name'|'oldest'>('recent');
   const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
   const totalNum = total ? Number(total) : 0;
   const ids = Array.from({length: Math.min(totalNum, 50)}, (_,i)=> i).reverse();
@@ -26,7 +28,16 @@ export default function GalleryPage() {
     return { id, name: evt[0], description: evt[1], location: evt[3], creator: evt[6], isSoulbound: evt[9], isPublic: evt[10], image: decoded?.image || null, owned: bal>0, decoded };
   }).filter(Boolean) as any[];
 
-  const filtered = tab==='owned' ? items.filter(i=>i.owned) : items;
+  const base = (tab==='owned' ? items.filter(i=>i.owned) : items).filter(i=>{
+    if(!q.trim()) return true;
+    const s=q.toLowerCase();
+    return i.name.toLowerCase().includes(s) || String(i.location).toLowerCase().includes(s) || String(i.creator).toLowerCase().includes(s);
+  });
+  const filtered = [...base].sort((a,b)=>{
+    if(sort==='name') return a.name.localeCompare(b.name);
+    if(sort==='oldest') return a.id - b.id;
+    return b.id - a.id; // recent
+  });
 
   return (
     <div className="min-w-0 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10">
@@ -45,16 +56,38 @@ export default function GalleryPage() {
         </div>
       </div>
 
+      <div className="mt-6 rounded-[2px] border border-line bg-white p-3 flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">⌕</span>
+          <input value={q} onChange={e=> setQ(e.target.value)} placeholder="Search by name, location or creator 0x…" className="w-full rounded-[2px] border-2 border-line bg-white pl-9 pr-9 py-2.5 text-sm focus:border-ink focus:outline-none placeholder:text-muted" />
+          {q && <button onClick={()=> setQ('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded-[2px] bg-paper-muted border border-line">Clear</button>}
+        </div>
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
+          <span className="text-xs uppercase tracking-widest text-muted">Sort</span>
+          <select value={sort} onChange={e=> setSort(e.target.value as any)} className="rounded-[2px] border border-line bg-paper-muted px-3 py-2.5 text-sm focus:border-ink focus:outline-none">
+            <option value="recent">Recent first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
+        <div className="sm:hidden flex gap-2">
+          <button onClick={()=> setSort('recent')} className={`flex-1 py-2 rounded-[2px] border text-xs font-medium ${sort==='recent'?'bg-ink text-white border-ink':'bg-white border-line'}`}>Recent</button>
+          <button onClick={()=> setSort('oldest')} className={`flex-1 py-2 rounded-[2px] border text-xs font-medium ${sort==='oldest'?'bg-ink text-white border-ink':'bg-white border-line'}`}>Oldest</button>
+          <button onClick={()=> setSort('name')} className={`flex-1 py-2 rounded-[2px] border text-xs font-medium ${sort==='name'?'bg-ink text-white border-ink':'bg-white border-line'}`}>A-Z</button>
+        </div>
+      </div>
+      <div className="mt-3 text-xs text-muted">{filtered.length} shown {q ? `for “${q}”` : ''} • sort: <span className="text-ink font-medium">{sort}</span></div>
+
       {!address && tab==='owned' && <div className="mt-6 text-sm text-muted">Connect wallet to see owned POAPs.</div>}
 
       <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {filtered.map(item=> (
-          <Link key={item.id} href={`/event/${item.id}`} className="archive-card overflow-hidden group interactive-card">
+          <Link key={item.id} href={`/event/${item.id}`} className="rounded-[2px] border border-line bg-white overflow-hidden group hover:border-ink hover:shadow-sm transition-all">
             <div className="aspect-[4/3] bg-paper-muted border-b border-line overflow-hidden flex items-center justify-center p-0 relative">
               {item.image ? (
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-ink text-paper flex items-center justify-center font-medium mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
+                <div className="w-16 h-16 rounded-[2px] bg-ink text-paper flex items-center justify-center font-medium mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
               )}
               {item.owned && <div className="absolute top-3 left-3 badge badge-success text-xs shadow-sm">Owned</div>}
               {item.isSoulbound && <div className="absolute top-3 right-3 badge badge-neutral text-[10px]">Soulbound</div>}
@@ -71,7 +104,7 @@ export default function GalleryPage() {
           </Link>
         ))}
       </div>
-      {filtered.length===0 && <div className="mt-12 archive-card p-12 text-center text-muted">No POAPs in this view. Try Create or switch tab.</div>}
+      {filtered.length===0 && <div className="mt-12 rounded-[2px] border border-dashed border-line bg-paper-muted p-12 text-center text-muted">No POAPs found. Try another search or switch tab.</div>}
     </div>
   );
 }

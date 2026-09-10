@@ -175,16 +175,36 @@ export default function EventPage() {
             </div>
           </div>
 
-          {/* 6 — Social / Collect Flex: share + copy + download */}
-          <div className="archive-card p-4">
-            <div className="text-[11px] uppercase tracking-[0.16em] font-medium text-muted">Share & Collect</div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button onClick={() => { navigator.clipboard.writeText(window.location.href); setMsg('Link copied ✓'); setTimeout(()=>setMsg(null),2000); }} className="ghost-button text-xs rounded-[2px]">Copy link</button>
-              <a href={`https://warpcast.com/~/compose?text=${encodeURIComponent(`Mint my Onchain POAP — ${event.name} #${id} on Base Sepolia`)}&embeds[]=${encodeURIComponent(typeof window!=='undefined'?window.location.href:'')}`} target="_blank" className="ghost-button text-xs rounded-[2px]">Warpcast ↗</a>
-              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Mint Onchain POAP: ${event.name} #${id}`)}&url=${encodeURIComponent(typeof window!=='undefined'?window.location.href:'')}`} target="_blank" className="ghost-button text-xs rounded-[2px]">𝕏 Share</a>
-              <button onClick={() => { if(!decoded?.image) return; const a=document.createElement('a'); a.href=decoded.image; a.download=`poap-${id}.svg`; a.click(); }} className="ghost-button text-xs rounded-[2px]">Download SVG</button>
+          {/* 9 One-Click Verify & Share — fancy, fits build */}
+          <div className="rounded-[2px] border border-line bg-white p-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-[2px] bg-ink text-white flex items-center justify-center text-xs">↗</div>
+              <div className="text-[11px] uppercase tracking-[0.16em] font-medium text-muted">Share & Verify</div>
+              <span className="ml-auto text-xs px-2 py-0.5 rounded-[2px] bg-paper-muted border border-line">SSTORE2 • Base Sepolia</span>
             </div>
-            <div className="mt-2 text-xs text-muted">Links are SSTORE2 BaseSepolia • verify on BaseScan/OpenSea. MiniApp deep-link is same URL.</div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button onClick={() => { navigator.clipboard.writeText(typeof window!=='undefined'?window.location.href:''); setMsg('Link copied ✓'); setTimeout(()=>setMsg(null),2000); }} className="group rounded-[2px] border-2 border-line bg-white p-3 flex items-center gap-3 hover:border-ink hover:shadow-sm transition-all text-left">
+                <span className="w-8 h-8 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center group-hover:bg-ink group-hover:text-white group-hover:border-ink transition-colors">⧉</span>
+                <span><span className="block text-sm font-medium">Copy link</span><span className="text-xs text-muted">MiniApp URL</span></span>
+              </button>
+              <a href={`https://warpcast.com/~/compose?text=${encodeURIComponent(`Mint my Onchain POAP — ${event.name} #${id}`)}&embeds[]=${encodeURIComponent(typeof window!=='undefined'?window.location.href:'')}`} target="_blank" className="group rounded-[2px] border-2 border-line bg-white p-3 flex items-center gap-3 hover:border-ink hover:shadow-sm transition-all">
+                <span className="w-8 h-8 rounded-[2px] bg-[#5A2D82] text-white flex items-center justify-center text-xs">W</span>
+                <span><span className="block text-sm font-medium group-hover:text-brand-red">Warpcast</span><span className="text-xs text-muted">Cast with Mini App</span></span>
+              </a>
+              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Mint Onchain POAP: ${event.name} #${id}`)}&url=${encodeURIComponent(typeof window!=='undefined'?window.location.href:'')}`} target="_blank" className="group rounded-[2px] border-2 border-line bg-white p-3 flex items-center gap-3 hover:border-ink hover:shadow-sm transition-all">
+                <span className="w-8 h-8 rounded-[2px] bg-black text-white flex items-center justify-center text-xs">𝕏</span>
+                <span><span className="block text-sm font-medium">Share on X</span><span className="text-xs text-muted">Post the POAP</span></span>
+              </a>
+              <button onClick={() => { if(!decoded?.image) return; const a=document.createElement('a'); a.href=decoded.image; a.download=`poap-${id}.svg`; a.click(); }} className="group rounded-[2px] border-2 border-line bg-white p-3 flex items-center gap-3 hover:border-ink hover:shadow-sm transition-all text-left">
+                <span className="w-8 h-8 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center group-hover:bg-ink group-hover:text-white transition-colors">⬇</span>
+                <span><span className="block text-sm font-medium">Download</span><span className="text-xs text-muted">SVG image</span></span>
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href={getBasescanLink(id)} target="_blank" className="rounded-[2px] border border-line bg-paper-muted px-3 py-1.5 text-xs font-medium hover:border-ink hover:bg-white transition-colors">BaseScan ↗</a>
+              <a href={getOpenseaLink(id)} target="_blank" className="rounded-[2px] border border-line bg-paper-muted px-3 py-1.5 text-xs font-medium hover:border-ink hover:bg-white transition-colors">OpenSea ↗</a>
+              <span className="text-xs text-muted self-center">Links verify same onchain data</span>
+            </div>
           </div>
 
           <div className="archive-card p-5">
@@ -302,24 +322,61 @@ export default function EventPage() {
             <h3 className="font-medium">Creator Console {isCreator ? <span className="badge badge-success text-xs ml-2">You are creator</span> : <span className="badge badge-neutral text-xs ml-2">Creator only</span>}</h3>
             {!isCreator ? <div className="mt-3 text-sm text-muted">Connect as <span className="mono-num">{event.creator.slice(0,6)}…</span> to manage this POAP.</div> : (
               <div className="mt-4 space-y-6">
-                {/* Allowlist */}
-                <div className="archive-inset p-4">
-                  <div className="font-medium text-sm">Allowlist — set root once ({creatorExpired ? 'expired' : formatCountdown(creatorSec)+' left'})</div>
-                  <textarea value={rawList} onChange={e=>setRawList(e.target.value)} rows={4} placeholder="Paste addresses, one per line or comma separated" className="mt-3 w-full rounded-xl border border-line bg-paper-elevated px-3 py-2 mono-num text-xs" />
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <button onClick={()=>{
-                      if (!merkleFromList) return;
-                      setNewRootInput(merkleFromList.root);
-                    }} className="ghost-button text-xs">Preview root</button>
-                    <span className="text-xs mono-num text-muted self-center">{merkleFromList ? merkleFromList.root.slice(0,18)+'…' : 'no list'}</span>
+                {/* 3 Allowlist — fancy CSV Drop + Live Check, fits build */}
+                <div className="rounded-[2px] border border-line bg-white p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center text-ink text-xs">☰</div>
+                    <div className="font-medium text-sm">Invite List — drop CSV</div>
+                    <span className={`ml-auto text-xs px-2 py-0.5 rounded-[2px] border font-medium ${creatorExpired?'bg-paper-muted border-line text-muted':'bg-success/10 border-success/20 text-success'}`}>{creatorExpired ? 'Expired' : formatCountdown(creatorSec)+' left'}</span>
                   </div>
-                  <input value={newRootInput} onChange={e=>setNewRootInput(e.target.value)} placeholder="0x root (auto-filled from preview)" className="mt-3 w-full rounded-lg border border-line px-3 py-2 mono-num text-xs" />
-                  {event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000' && <div className="mt-2 text-xs text-warn">Root already set — cannot be changed (onchain enforces one-time).</div>}
-                  <button onClick={doUpdateRoot} disabled={creatorExpired || event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000' || isPending} className="mt-3 ink-button text-sm disabled:opacity-40 w-full">Set Allowlist Root Onchain →</button>
+                  <div className="mt-1 text-xs text-muted">Drag a CSV or paste addresses. One root, set once. No tech needed.</div>
+                  <div
+                    onDragOver={e=>{e.preventDefault(); (e.currentTarget as HTMLDivElement).classList.add('border-brand-red','bg-brand-red/5');}}
+                    onDragLeave={e=>{(e.currentTarget as HTMLDivElement).classList.remove('border-brand-red','bg-brand-red/5');}}
+                    onDrop={e=>{
+                      e.preventDefault(); (e.currentTarget as HTMLDivElement).classList.remove('border-brand-red','bg-brand-red/5');
+                      const file=(e.dataTransfer.files as FileList)?.[0];
+                      if(file){ const r=new FileReader(); r.onload=()=> setRawList(String(r.result||'')); r.readAsText(file); }
+                    }}
+                    className="mt-3 rounded-[2px] border-2 border-dashed border-line bg-paper-muted p-4 text-center hover:border-brand-red/40 hover:bg-white transition-colors cursor-pointer"
+                    onClick={()=> (document.getElementById(`csv-${id}`) as HTMLInputElement)?.click()}
+                  >
+                    <div className="text-sm font-medium">Drop CSV here or click to browse</div>
+                    <div className="text-xs text-muted mt-1">One address per line or comma — we clean duplicates</div>
+                    <input id={`csv-${id}`} type="file" accept=".csv,.txt" className="hidden" onChange={e=>{
+                      const f=(e.target as HTMLInputElement).files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=> setRawList(String(r.result||'')); r.readAsText(f);
+                    }} />
+                  </div>
+                  <textarea value={rawList} onChange={e=>setRawList(e.target.value)} rows={4} placeholder="0x1234…&#10;0xabcd…" className="mt-3 w-full rounded-[2px] border border-line bg-white px-3 py-2.5 mono-num text-xs focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20" />
+                  <div className="mt-2 flex items-center gap-2 text-xs">
+                    <span className="mono-num text-muted">{merkleFromList ? `${merkleFromList.leaves.length} addresses` : 'No list yet'}</span>
+                    <span className="text-muted">•</span>
+                    <span className="mono-num text-muted truncate flex-1">{merkleFromList ? merkleFromList.root.slice(0,14)+'…'+merkleFromList.root.slice(-6) : 'no root'}</span>
+                    {merkleFromList && <button onClick={()=> setNewRootInput(merkleFromList.root)} className="ghost-button text-xs py-1 px-2 rounded-[2px]">Use root →</button>}
+                  </div>
+                  <div className="mt-3 rounded-[2px] border border-line bg-paper-muted p-3">
+                    <div className="text-xs font-medium">Live check — is a wallet invited?</div>
+                    <div className="mt-2 flex gap-2">
+                      <input id={`check-${id}`} placeholder="0x… paste to test" className="flex-1 rounded-[2px] border border-line bg-white px-3 py-2 mono-num text-xs focus:border-brand-red focus:outline-none" />
+                      <button onClick={()=>{
+                        const el=document.getElementById(`check-${id}`) as HTMLInputElement;
+                        const addr=el?.value?.trim()||''; const out=document.getElementById(`check-out-${id}`)!;
+                        if(!/^0x[a-fA-F0-9]{40}$/.test(addr)){ out.textContent='Enter valid 0x address'; (out as HTMLElement).className='mt-2 text-xs text-warn'; return; }
+                        if(!merkleFromList){ out.textContent='Build a list first'; (out as HTMLElement).className='mt-2 text-xs text-muted'; return; }
+                        const leaf=leafForAddress(addr); const proof=getProof(addr, merkleFromList); const ok=verifyProof(leaf, proof, merkleFromList.root as any);
+                        out.textContent = ok ? `✓ ${addr.slice(0,6)}… invited — proof has ${proof.length} items` : `✗ ${addr.slice(0,6)}… not on this list`;
+                        (out as HTMLElement).className = `mt-2 text-xs font-medium ${ok?'text-success':'text-danger'}`;
+                      }} className="ghost-button text-xs rounded-[2px] px-3">Check</button>
+                    </div>
+                    <div id={`check-out-${id}`} className="mt-2 text-xs text-muted">Paste any address to see proof instantly, no transaction.</div>
+                  </div>
+                  <input value={newRootInput} onChange={e=>setNewRootInput(e.target.value)} placeholder="0x root (auto-filled)" className="mt-3 w-full rounded-[2px] border border-line bg-white px-3 py-2 mono-num text-xs focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red/20" />
+                  {event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000' && <div className="mt-2 text-xs text-warn bg-warn-bg border border-amber-200 rounded-[2px] px-3 py-2">Root already set — cannot be changed (contract allows once).</div>}
+                  <button onClick={doUpdateRoot} disabled={creatorExpired || event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000' || isPending} className="mt-3 ink-button text-sm disabled:opacity-40 w-full rounded-[2px]">Set Invite Root Onchain →</button>
                   {merkleFromList && <button onClick={()=>{
                     const data = JSON.stringify({ root: merkleFromList.root, addresses: merkleFromList.leaves, proofs: Object.fromEntries(merkleFromList.leaves.map(a=>[a, getProof(a, merkleFromList!)])) }, null, 2);
                     const blob = new Blob([data], {type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`allowlist-${id}-proofs.json`; a.click();
-                  }} className="mt-2 ghost-button text-xs w-full">Download proofs JSON (distribute to allowlist)</button>}
+                  }} className="mt-2 ghost-button text-xs w-full rounded-[2px]">Download proofs to share →</button>}
                 </div>
 
                 {/* Public toggle */}

@@ -88,21 +88,21 @@ export default function CreatePage() {
       <h1 className="mt-4 font-display text-3xl sm:text-[36px] font-medium tracking-[-0.01em] leading-[0.95]">Register a new <em>Onchain POAP</em></h1>
       <p className="mt-2 max-w-2xl text-[14px] sm:text-[15px] text-muted leading-6">All metadata and SVG live onchain via SSTORE2. Optimize your SVG to save gas — no IPFS, no server.</p>
 
-      {/* Steps — horizontal, sharp, not disorganized */}
-      <div className="mt-8 flex items-center gap-0 sm:gap-3 overflow-x-auto pb-2">
+      {/* 1 Guided Create Wizard — fancy, plain explanations, fits build */}
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          {n:1, label:'Artwork & Name', desc:'SVG + title'},
-          {n:2, label:'Distribution', desc:'Public / Soulbound'},
-          {n:3, label:'Details & Review', desc:'Final check'},
-        ].map(({n,label,desc})=> (
-          <div key={n} className="flex items-center gap-3 shrink-0">
-            <button onClick={()=> n < step && setStep(n)} disabled={n>step} className={`w-9 h-9 flex items-center justify-center text-sm font-medium border-2 transition-all ${step===n ? 'bg-ink text-white border-ink shadow-sm' : step>n ? 'bg-brand-red text-white border-brand-red' : 'bg-white text-muted border-line'}`} style={{borderRadius:'2px'}}>{step>n ? '✓' : n}</button>
+          {n:1, label:'Artwork & Name', desc:'Pick tiny, clear art', plain:'Choose or paste SVG. Keep under 100KB.'},
+          {n:2, label:'Distribution', desc:'Who can mint?', plain:'Public, invite list, or per-wallet QR.'},
+          {n:3, label:'Details & Review', desc:'Final check', plain:'Add story, location, date and mint.'},
+        ].map(({n,label,desc,plain})=> (
+          <button key={n} onClick={()=> n < step && setStep(n)} disabled={n>step} className={`text-left rounded-[2px] border-2 p-3 flex gap-3 items-start transition-all ${step===n ? 'bg-white border-ink shadow-sm' : step>n ? 'bg-white border-brand-red/30' : 'bg-paper-muted border-line opacity-60'}`}>
+            <div className={`w-8 h-8 shrink-0 flex items-center justify-center text-sm font-medium border-2 rounded-[2px] ${step===n ? 'bg-ink text-white border-ink' : step>n ? 'bg-brand-red text-white border-brand-red' : 'bg-white text-muted border-line'}`}>{step>n ? '✓' : n}</div>
             <div className="min-w-0">
               <div className={`text-sm font-medium leading-none ${step===n ? 'text-ink' : step>n ? 'text-brand-red' : 'text-muted'}`}>{label}</div>
-              <div className="text-xs text-muted hidden sm:block">{desc}</div>
+              <div className="text-xs font-medium text-muted mt-1">{desc}</div>
+              <div className="text-xs text-muted leading-4 mt-1 hidden sm:block">{plain}</div>
             </div>
-            {n<3 && <div className={`w-12 h-px mx-2 sm:mx-4 hidden sm:block ${step>n ? 'bg-brand-red' : 'bg-line'}`} />}
-          </div>
+          </button>
         ))}
       </div>
 
@@ -130,11 +130,39 @@ export default function CreatePage() {
                     <div className="mt-4">
                       <StampStudio value={svg} onUse={(s)=>{setSvg(s); setOptimized(null); setStats(null);}} />
                       <div className="mt-3 text-xs text-muted bg-paper-muted border border-line rounded-[2px] px-3 py-2">Studio SVGs are hand-optimized (~1–3 KB) — cheaper than exported files. Click “Use this design” to load.</div>
+                      {/* Live Size & Cost Meter — fancy, fits build */}
+                      <div className="mt-3 rounded-[2px] border border-line bg-white p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-medium tracking-wide flex items-center gap-2">
+                            <span className="w-7 h-7 rounded-[2px] bg-ink text-white flex items-center justify-center text-[10px]">◈</span>
+                            Live Size & Cost
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-[2px] border font-medium ${new Blob([svgToUse]).size<3000?'bg-success/10 border-success/20 text-success':new Blob([svgToUse]).size<8000?'bg-paper-muted border-line text-ink':'bg-warn-bg border-amber-200 text-warn'}`}>{new Blob([svgToUse]).size<3000?'tiny':new Blob([svgToUse]).size<8000?'gas-friendly':'large'}</span>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-xs mono-num">
+                            <span className="text-muted">{new Blob([svgToUse]).size.toLocaleString()} bytes</span>
+                            <span className="text-muted">100KB max</span>
+                          </div>
+                          <div className="mt-1.5 h-2 rounded-full bg-paper-muted border border-line overflow-hidden p-0.5">
+                            <div className="h-full bg-brand-red transition-all" style={{width: `${Math.min(100, (new Blob([svgToUse]).size/(100*1024))*100)}%`}} />
+                          </div>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between text-xs">
+                          <span className="mono-num text-muted">{formatGasCost(gas)}</span>
+                          <span className="text-muted">SSTORE2 • ~75% cheaper</span>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="mt-4">
                       <label className="text-sm font-medium">SVG artwork *</label>
                       <textarea value={svg} onChange={e=>{setSvg(e.target.value); setOptimized(null);}} rows={7} className="mt-1.5 w-full rounded-[2px] border border-line bg-white px-4 py-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-red/20" />
+                      <div className="mt-3 rounded-[2px] border border-line bg-white p-3">
+                        <div className="text-xs font-medium">Live Size & Cost</div>
+                        <div className="mt-2 h-2 rounded-full bg-paper-muted border border-line overflow-hidden p-0.5"><div className="h-full bg-brand-red" style={{width: `${Math.min(100, (new Blob([svgToUse]).size/(100*1024))*100)}%`}} /></div>
+                        <div className="mt-2 text-xs mono-num text-muted flex justify-between"><span>{new Blob([svgToUse]).size.toLocaleString()} bytes</span><span>{formatGasCost(gas)}</span></div>
+                      </div>
                     </div>
                   )}
                   {new Blob([svgToUse]).size > 100*1024 && <div className="mt-4 text-xs text-warn bg-warn-bg border border-amber-200 rounded-[2px] px-3 py-2">Large SVG — recommend &lt;100KB (max ~120KB on Base) to avoid gas limit.</div>}
