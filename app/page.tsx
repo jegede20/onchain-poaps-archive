@@ -2,24 +2,25 @@
 import Link from 'next/link';
 import { useReadContract, useReadContracts } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS } from '@/lib/poap';
-import { useState, useEffect } from 'react';
 
 function useEvents(limit=12) {
   const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
   const totalNum = total ? Number(total) : 0;
-  const ids = Array.from({length: Math.min(totalNum, limit)}, (_,i)=> totalNum - i).filter(n=>n>=0);
+  const ids = Array.from({length: Math.min(totalNum, limit)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0 } as any });
   const events = ids.map((id, idx) => {
     const r = (eventsData as any)?.[idx]?.result;
     if (!r) return null;
     return { id, name: r[0], description: r[1], eventDate: r[2], location: r[3], allowlistRoot: r[4], svgImage: r[5], creator: r[6], createdAt: r[7], externalUrl: r[8], isSoulbound: r[9], isPublic: r[10] };
-  }).filter(Boolean);
+  }).filter(Boolean) as any[];
   return { totalNum, events, ids };
 }
 
 export default function Home() {
-  const { totalNum, events } = useEvents(9);
+  const { totalNum, events } = useEvents(12);
+  const latest = events[0] as any | undefined;
+  const marqueeEvents = events.length>0 ? [...events, ...events] : [];
   return (
     <div className="flex-1">
       {/* Hero - Archive lobby - not too tall, heading wide + distinct background */}
@@ -61,7 +62,7 @@ export default function Home() {
                   </div>
                   <div className="mt-3 text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Allowlist</div>
                   <div className="mt-1 font-medium text-sm leading-tight group-hover:text-brand-red transition-colors">Invite only</div>
-                  <div className="mt-1 text-xs leading-4 text-muted">Set Merkle root once →</div>
+                  <div className="mt-1 text-xs leading-4 text-muted">Set invite list once →</div>
                 </Link>
                 <Link href="/docs/signature-minting" className="group rounded-[2px] border border-line bg-white p-4 hover:border-ink hover:shadow-sm transition-all flex flex-col">
                   <div className="w-8 h-8 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center group-hover:bg-ink group-hover:border-ink group-hover:text-white transition-colors">
@@ -73,7 +74,46 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            <div className="w-full lg:w-[420px] shrink-0">
+            <div className="w-full lg:w-[420px] shrink-0 space-y-4">
+              {/* 1 — Hero Live Artwork: real SVG from chain, proves SSTORE2 */}
+              <div className="rounded-[2px] border-2 border-line bg-white overflow-hidden">
+                <div className="px-4 py-3 flex items-center justify-between border-b border-line bg-paper-muted/60">
+                  <div className="text-[11px] uppercase tracking-[0.16em] font-medium text-ink flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-brand-red animate-pulse" />
+                    Live artwork
+                  </div>
+                  <span className="text-xs mono-num text-muted">{latest ? `#${latest.id} • onchain` : 'No events yet'}</span>
+                </div>
+                <div className="h-[240px] flex items-center justify-center p-4 relative" style={{background:'#FFFBF0'}}>
+                  <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
+                  {latest?.svgImage ? (
+                    <div className="w-[200px] h-[200px] relative flex items-center justify-center">
+                      <div dangerouslySetInnerHTML={{__html:latest.svgImage}} className="w-full h-full" />
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="w-14 h-14 rounded-[2px] bg-brand-red/10 border border-brand-red/20 flex items-center justify-center mx-auto text-brand-red">✦</div>
+                      <div className="mt-3 text-sm font-medium">No POAP yet</div>
+                      <div className="text-xs text-muted">Create the first one — it will appear here live.</div>
+                    </div>
+                  )}
+                </div>
+                {latest ? (
+                  <div className="p-4 bg-white border-t border-line">
+                    <div className="font-medium leading-tight line-clamp-1">{latest.name}</div>
+                    <div className="text-xs text-muted mt-1 line-clamp-1">{latest.location || 'Onchain'} • {latest.isSoulbound ? 'Soulbound' : 'Transferable'}</div>
+                    <div className="mt-3 flex gap-2">
+                      <Link href={`/event/${latest.id}`} className="flex-1 ink-button text-xs py-2 text-center rounded-[2px]">View & mint →</Link>
+                      <a href={`https://sepolia.basescan.org/address/0xC3249356a483fbe17d5355D39105D2eA666d9de6#code`} target="_blank" className="px-3 py-2 rounded-[2px] border border-line bg-white text-xs font-medium hover:border-ink transition-colors">BaseScan ↗</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-white border-t border-line">
+                    <Link href="/create" className="ink-button w-full text-center text-sm py-2.5 rounded-[2px]">Create the genesis POAP →</Link>
+                  </div>
+                )}
+              </div>
+
               <div className="rounded-[2px] p-6 text-white relative overflow-hidden shimmer" style={{background:'#2E1A0F', border:'1px solid #2E1A0F'}}>
                 <div className="absolute inset-0 opacity-[0.07]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize:'20px 20px'}} />
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/20 rounded-full blur-2xl" />
@@ -93,7 +133,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 archive-inset p-4 flex items-center justify-between interactive-card">
+              <div className="archive-inset p-4 flex items-center justify-between interactive-card">
                 <div className="text-xs text-muted">Not sure where to start?</div>
                 <Link href="/docs/creating-poap" className="text-sm font-medium text-brand-red hover:underline decoration-2 underline-offset-4">Create in 3 steps →</Link>
               </div>
@@ -102,8 +142,62 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 2 — One-Click Trust Ribbon */}
+      <div className="border-b border-line bg-ink text-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-9 flex items-center gap-2 sm:gap-4 text-xs overflow-hidden">
+          <span className="hidden sm:inline-flex items-center gap-2 shrink-0">
+            <span className="w-2 h-2 rounded-full bg-brass animate-pulse" />
+            <span className="uppercase tracking-[0.14em] font-medium text-brass">Onchain verified</span>
+          </span>
+          <span className="hidden sm:block w-px h-4 bg-white/15 shrink-0" />
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <a href="https://sepolia.basescan.org/address/0xC3249356a483fbe17d5355D39105D2eA666d9de6#code" target="_blank" className="mono-num hover:text-brass transition-colors truncate">0xC3249…9de6 • verified • SSTORE2</a>
+            <span className="hidden md:inline text-white/30">•</span>
+            <span className="hidden md:inline text-white/70">No IPFS</span>
+            <span className="hidden md:inline text-white/30">•</span>
+            <span className="hidden md:inline text-white/70">Base Sepolia 84532</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 shrink-0 ml-auto">
+            <a href="https://sepolia.basescan.org/address/0xC3249356a483fbe17d5355D39105D2eA666d9de6#code" target="_blank" className="rounded-[2px] border border-white/20 bg-white/10 px-2.5 py-1 font-medium hover:bg-white hover:text-ink transition-colors">BaseScan ↗</a>
+            <span className="mono-num text-white/50 hidden lg:inline">eip155:84532</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3 — 3-Step Path */}
+      <div className="border-b border-line bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">How it flows</div>
+              <h2 className="mt-1 font-display text-2xl sm:text-[28px] font-medium tracking-tight leading-none">From idea to kept proof</h2>
+            </div>
+            <span className="text-xs text-muted">3 steps • 2 minutes • 100% onchain</span>
+          </div>
+          <div className="mt-6 grid sm:grid-cols-3 gap-4">
+            {[
+              {n:'01', title:'Create', desc:'Name + SVG (we keep it tiny), choose soulbound & where it lives.', cta:'Create POAP →', href:'/create', accent:'bg-brand-red'},
+              {n:'02', title:'Choose how people get it', desc:'Open to all, invite list, or QR at the door — you can change within 30 days.', cta:'See how →', href:'/docs/allowlists', accent:'bg-ink'},
+              {n:'03', title:'Collect & verify', desc:'Attendees mint (1 per wallet), see it in Gallery, check on BaseScan anytime.', cta:'Open Gallery →', href:'/gallery', accent:'bg-brass'},
+            ].map(s=> (
+              <div key={s.n} className="group rounded-[2px] border-2 border-line bg-white p-5 hover:border-ink hover:shadow-sm transition-all relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-line group-hover:bg-brand-red/20 transition-colors" />
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-[2px] ${s.accent} text-white flex items-center justify-center text-sm font-medium mono-num`}>{s.n}</div>
+                  <div className="text-[11px] uppercase tracking-[0.16em] font-medium text-muted">{s.n} — STEP</div>
+                  <span className="ml-auto text-muted group-hover:text-brand-red transition-colors">→</span>
+                </div>
+                <div className="mt-4 font-display text-lg font-medium leading-tight">{s.title}</div>
+                <div className="mt-2 text-sm leading-6 text-muted">{s.desc}</div>
+                <Link href={s.href} className="mt-4 inline-flex text-sm font-medium text-ink hover:text-brand-red transition-colors">{s.cta}</Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Real images — competitive edge */}
-      <div className="border-y border-line bg-white">
+      <div className="border-b border-line bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -138,7 +232,7 @@ export default function Home() {
               </div>
               <div className="p-4">
                 <div className="font-medium text-sm leading-tight">Distribute — Public / Allowlist / Sig</div>
-                <div className="text-xs text-muted mt-1 leading-5">Open public 30d, set Merkle root once, or sign per-wallet QR (37d).</div>
+                <div className="text-xs text-muted mt-1 leading-5">Open public 30d, set invite list once, or sign per-wallet QR (37d).</div>
               </div>
             </div>
             <div className="archive-card overflow-hidden p-0 group">
@@ -183,7 +277,11 @@ export default function Home() {
             {events.map((e:any)=> (
               <Link key={e.id} href={`/event/${e.id}`} className="archive-card p-4 hover:shadow-lg hover:border-brand-red/20 transition-all group interactive-card">
                 <div className="aspect-[4/3] rounded-xl bg-paper-muted border border-line overflow-hidden flex items-center justify-center p-4 relative">
-                  <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num text-sm group-hover:scale-105 transition-transform">{String(e.id).padStart(2,'0')}</div>
+                  {e.svgImage ? (
+                    <div className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain" dangerouslySetInnerHTML={{__html: e.svgImage}} />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num text-sm group-hover:scale-105 transition-transform">{String(e.id).padStart(2,'0')}</div>
+                  )}
                   <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-brand-red animate-pulse" />
                 </div>
                 <div className="mt-4">
@@ -202,6 +300,126 @@ export default function Home() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* 4 — Gallery Marquee: real SVGs, live */}
+      <div className="border-y border-line bg-paper-muted/40 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">Onchain canvas</div>
+              <h2 className="mt-1 font-display text-xl sm:text-2xl font-medium tracking-tight leading-none">Art stays onchain — not a link</h2>
+            </div>
+            <Link href="/gallery" className="text-sm font-medium text-ink border border-line bg-white px-3 py-1.5 rounded-[2px] hover:border-ink transition-colors">Open Gallery →</Link>
+          </div>
+        </div>
+        <div className="relative overflow-hidden pb-8">
+          <div className="absolute left-0 top-0 bottom-8 w-12 bg-gradient-to-r from-paper-muted/40 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-paper-muted/40 to-transparent z-10 pointer-events-none" />
+          {events.length===0 ? (
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="rounded-[2px] border border-dashed border-line bg-white p-8 text-center text-sm text-muted">No artwork yet — your POAP will be the first tile here.</div>
+            </div>
+          ) : (
+            <div className="flex gap-4 animate-marquee" style={{width:'max-content', animation:'marquee 28s linear infinite'}}>
+              {marqueeEvents.map((e:any, idx:number)=> (
+                <Link key={`${e.id}-${idx}`} href={`/event/${e.id}`} className="shrink-0 w-[160px] rounded-[2px] border-2 border-line bg-white overflow-hidden hover:border-ink hover:shadow-sm transition-all group">
+                  <div className="h-[140px] flex items-center justify-center p-3 relative" style={{background:'#FFFBF0'}}>
+                    {e.svgImage ? (
+                      <div className="w-[120px] h-[120px] flex items-center justify-center [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{__html:e.svgImage}} />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-ink text-white flex items-center justify-center mono-num text-xs">{String(e.id).padStart(2,'0')}</div>
+                    )}
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-[2px] bg-ink text-white flex items-center justify-center text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">↗</div>
+                  </div>
+                  <div className="p-2.5 border-t border-line">
+                    <div className="text-xs font-medium leading-tight line-clamp-1 group-hover:text-brand-red">{e.name}</div>
+                    <div className="text-[11px] text-muted mono-num">#{e.id} • {e.isSoulbound ? 'Soulbound' : 'Transferable'}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+        <style>{`@keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } } .animate-marquee:hover { animation-play-state: paused }`}</style>
+      </div>
+
+      {/* 5 — Distribution Plain Cards: when to use which */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <div>
+          <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">Pick how people get it</div>
+          <h2 className="mt-1 font-display text-2xl sm:text-[28px] font-medium tracking-tight leading-none">Plain choice, no guesswork</h2>
+          <p className="mt-2 text-sm text-muted max-w-2xl leading-6">You don’t need to know the tech. Just pick the situation — we handle the rest.</p>
+        </div>
+        <div className="mt-6 grid sm:grid-cols-3 gap-4">
+          {[
+            {icon:'○', badge:'Open to anyone', title:'Share a link — anyone can mint', desc:'Good for public events. You can pause or resume within 30 days if needed.', cta:'Use Public →', href:'/docs/public-minting', accent:'border-brand-red/30 hover:border-brand-red bg-brand-red/5'},
+            {icon:'◐', badge:'Invite list only', title:'Paste addresses, we set it once', desc:'Private drop. Paste a CSV of wallets → we put the list onchain. Attendees bring their proof.', cta:'See invite list →', href:'/docs/allowlists', accent:'border-line hover:border-ink bg-white'},
+            {icon:'◈', badge:'QR at the venue', title:'One QR per wallet — for the door', desc:'Great live. You sign a link for each attendee (works 37 days). Put it on screen, poster, or badge.', cta:'How QR works →', href:'/docs/signature-minting', accent:'border-line hover:border-ink bg-white'},
+          ].map(c=> (
+            <Link key={c.badge} href={c.href} className={`group rounded-[2px] border-2 p-5 flex flex-col hover:shadow-sm transition-all ${c.accent}`}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-[2px] bg-ink text-white flex items-center justify-center text-sm">{c.icon}</div>
+                <span className="text-[11px] uppercase tracking-[0.14em] font-medium text-brand-red">{c.badge}</span>
+              </div>
+              <div className="mt-4 font-display text-[17px] font-medium leading-tight group-hover:text-brand-red transition-colors">{c.title}</div>
+              <div className="mt-2 text-sm leading-6 text-muted flex-1">{c.desc}</div>
+              <div className="mt-4 text-sm font-medium text-ink group-hover:text-brand-red transition-colors">{c.cta}</div>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-4 rounded-[2px] border border-line bg-paper-muted p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="text-muted">Not sure? Start with <span className="text-ink font-medium">Open to anyone</span> — you can switch within 30 days.</span>
+          <Link href="/docs" className="font-medium text-brand-red hover:underline">Compare all options →</Link>
+        </div>
+      </div>
+
+      {/* 6 — Build Proof Footer: docs + open source */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
+        <div className="rounded-[2px] border-2 border-line bg-white overflow-hidden">
+          <div className="grid md:grid-cols-5 gap-0">
+            <div className="md:col-span-3 p-6 sm:p-7">
+              <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">Docs & source</div>
+              <h3 className="mt-2 font-display text-xl sm:text-2xl font-medium tracking-tight leading-tight">Everything needed to run it yourself</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">Twelve plain guides, MIT code, and a deploy that takes minutes — no hidden steps.</p>
+              <div className="mt-5 grid sm:grid-cols-3 gap-3">
+                <Link href="/docs/creating-poap" className="rounded-[2px] border border-line bg-paper-muted p-4 hover:border-ink hover:bg-white transition-colors group">
+                  <div className="text-xs font-medium group-hover:text-brand-red">Creating a POAP →</div>
+                  <div className="text-xs text-muted mt-1 leading-4">Name, SVG, limits, SSTORE2</div>
+                </Link>
+                <Link href="/docs/svg-requirements" className="rounded-[2px] border border-line bg-paper-muted p-4 hover:border-ink hover:bg-white transition-colors group">
+                  <div className="text-xs font-medium group-hover:text-brand-red">SVG rules →</div>
+                  <div className="text-xs text-muted mt-1 leading-4">Size, cost, tiny vs large</div>
+                </Link>
+                <Link href="/docs/verification" className="rounded-[2px] border border-line bg-paper-muted p-4 hover:border-ink hover:bg-white transition-colors group">
+                  <div className="text-xs font-medium group-hover:text-brand-red">Verify a mint →</div>
+                  <div className="text-xs text-muted mt-1 leading-4">BaseScan & OpenSea</div>
+                </Link>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2 text-xs">
+                <Link href="/docs" className="ink-button text-xs py-2 px-4 rounded-[2px]">Browse all 12 guides →</Link>
+                <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[2px] border border-line bg-white">No IPFS</span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[2px] border border-line bg-white">No backend</span>
+              </div>
+            </div>
+            <div className="md:col-span-2 bg-ink text-white p-6 sm:p-7 relative overflow-hidden flex flex-col">
+              <div className="absolute inset-0 opacity-[0.06]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize:'18px 18px'}} />
+              <div className="relative flex-1">
+                <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brass">Open source</div>
+                <div className="mt-3 font-display text-lg font-medium leading-tight">Public, MIT, deployable in minutes.</div>
+                <div className="mt-2 text-sm leading-6 text-white/70">Clone, `npm i`, set RPC, deploy to Vercel. Contract on Base Sepolia 0xC3249…9de6.</div>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <a href="https://github.com/jegede20/onchain-poaps-archive" target="_blank" className="rounded-[2px] bg-white text-ink px-4 py-2 text-sm font-medium hover:bg-paper-muted transition-colors">GitHub →</a>
+                  <a href="https://sepolia.basescan.org/address/0xC3249356a483fbe17d5355D39105D2eA666d9de6#code" target="_blank" className="rounded-[2px] border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium hover:bg-white hover:text-ink transition-colors">Contract</a>
+                </div>
+              </div>
+              <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between text-xs">
+                <span className="text-white/50">eip155:84532</span>
+                <span className="mono-num text-brass">12 docs • MIT</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Education - catchy */}
