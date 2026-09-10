@@ -38,10 +38,10 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     const goldDeep = '#A88A4A';
     const paper = bg;
 
-    // topArc: scallop+classic = well inside gold circle, gear = up to circle edge (not outside)
+    // topArc: scallop+classic = well inside gold circle (fit well), gear = up to circle edge (not outside)
     const topArcD = shape === 'gear'
       ? 'M 42 78 A 64 64 0 0 1 158 78'   // gear: higher, reaches close to gold ring
-      : 'M 54 88.5 A 50 50 0 0 1 146 88.5'; // scallop/classic: deeper inside
+      : 'M 48 82 A 58 58 0 0 1 152 82'; // scallop/classic: fit well inside gold circle
     const defs = `
   <defs>
     <path id="topArc" d="${topArcD}"/>
@@ -51,12 +51,12 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     </filter>
   </defs>`;
 
-    // Outer serrated bezel (gold) — 32 teeth
+    // Outer serrated bezel (gold) — 32 teeth — bigger
     const serratedOuter = (()=> {
       const teeth=32; let d='';
       for(let i=0;i<teeth;i++){
         const a0=(i/teeth)*360-90, a1=((i+0.5)/teeth)*360-90, a2=((i+1)/teeth)*360-90;
-        const rBase=88.5, rTip=94;
+        const rBase=90, rTip=95.5;
         const x0=(100+rBase*Math.cos(a0*Math.PI/180)).toFixed(1);
         const y0=(100+rBase*Math.sin(a0*Math.PI/180)).toFixed(1);
         const xm=(100+rTip*Math.cos(a1*Math.PI/180)).toFixed(1);
@@ -67,11 +67,11 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
         d+=`Q ${xm} ${ym} ${x1} ${y1} `;
       }
       d+='Z';
-      return `<path d="${d}" fill="${gold}" stroke="${goldDeep}" stroke-width="0.7"/>`;
+      return `<path d="${d}" fill="${gold}" stroke="${goldDeep}" stroke-width="0.75"/>`;
     })();
 
-    const smoothOuter = `<circle cx="100" cy="100" r="89.5" fill="${gold}" stroke="${goldDeep}" stroke-width="0.8"/>`;
-    const gearOuter = `<path d="M100 24.5 L104.8 38.2 L119.5 32.8 L122.8 46.8 L138.2 47.2 L133.2 61.2 L148.2 68.5 L141 81.2 L154.2 92.2 L141 103.2 L148.2 116 L133.2 123.2 L138.2 137.2 L122.8 137.6 L119.5 151.5 L104.8 146.2 L100 160.5 L95.2 146.2 L80.5 151.5 L77.2 137.6 L61.8 137.2 L66.8 123.2 L51.8 116 L59 103.2 L45.8 92.2 L59 81.2 L51.8 68.5 L66.8 61.2 L61.8 47.2 L77.2 46.8 L80.5 32.8 L95.2 38.2 Z" fill="${gold}" stroke="${goldDeep}" stroke-width="0.7"/>`;
+    const smoothOuter = `<circle cx="100" cy="100" r="91.5" fill="${gold}" stroke="${goldDeep}" stroke-width="0.85"/>`;
+    const gearOuter = `<path d="M100 22.5 L105 37 L120.5 31.5 L123.8 46 L139.5 46.2 L134.2 60.8 L149.5 68 L142 81.5 L155.5 92.2 L142 103 L149.5 116.5 L134.2 123.5 L139.5 138 L123.8 138.5 L120.5 152.5 L105 147 L100 162.5 L95 147 L79.5 152.5 L76.2 138.5 L60.5 138 L65.8 123.5 L50.5 116.5 L58 103 L44.5 92.2 L58 81.5 L50.5 68 L65.8 60.8 L60.5 46.2 L76.2 46 L79.5 31.5 L95 37 Z" fill="${gold}" stroke="${goldDeep}" stroke-width="0.75"/>`;
 
     const outer = shape==='scallop' ? serratedOuter : shape==='gear' ? gearOuter : smoothOuter;
 
@@ -90,11 +90,11 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
       [76,68],[124,68],[86,73],[114,73],[72,96],[128,96],[83,108],[117,108]
     ].map(([x,y])=> `<g transform="translate(${x} ${y})"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="${goldLight}" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="${goldDeep}" opacity="0.95"/></g>`).join('');
 
-    // central dark enamel — big but not very big (73.5, was 71.5)
-    const innerDark = `<circle cx="100" cy="100" r="73.5" fill="${dark}" stroke="${gold}" stroke-width="1.5"/>
-  <circle cx="100" cy="100" r="71.2" fill="none" stroke="${goldLight}" stroke-width="0.5" opacity="0.38"/>
-  <circle cx="100" cy="100" r="55.2" fill="none" stroke="${gold}" stroke-width="0.5" stroke-dasharray="1.8 4" opacity="0.48"/>
-  <circle cx="100" cy="100" r="50.5" fill="none" stroke="${goldLight}" stroke-width="0.4" stroke-dasharray="0.9 5.5" opacity="0.22"/>`;
+    // central dark enamel — big (75.5, not very big) + outer also bigger
+    const innerDark = `<circle cx="100" cy="100" r="75.5" fill="${dark}" stroke="${gold}" stroke-width="1.55"/>
+  <circle cx="100" cy="100" r="73.2" fill="none" stroke="${goldLight}" stroke-width="0.55" opacity="0.40"/>
+  <circle cx="100" cy="100" r="57.2" fill="none" stroke="${gold}" stroke-width="0.55" stroke-dasharray="1.9 4" opacity="0.52"/>
+  <circle cx="100" cy="100" r="52.5" fill="none" stroke="${goldLight}" stroke-width="0.45" stroke-dasharray="0.9 5.5" opacity="0.24"/>`;
 
     // banner — ONCHAIN • POAP • BASE
     const bannerBox = `<g filter="url(#goldShadow)">
@@ -136,9 +136,9 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
   return (
     <div className="space-y-4">
       <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
-        <div className="h-[260px] sm:h-[280px] flex items-center justify-center p-4 relative overflow-hidden" style={{background:'#FFFBF0'}}>
+        <div className="h-[270px] sm:h-[290px] flex items-center justify-center p-3 relative overflow-hidden" style={{background:'#FFFBF0'}}>
           <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
-          <div className="w-full max-w-[220px] sm:max-w-[230px] aspect-square flex items-center justify-center p-0 relative">
+          <div className="w-full max-w-[240px] sm:max-w-[250px] aspect-square flex items-center justify-center p-0 relative">
             <div dangerouslySetInnerHTML={{__html: svg}} className="w-full h-full" />
           </div>
         </div>
