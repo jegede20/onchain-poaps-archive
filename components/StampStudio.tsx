@@ -2,8 +2,8 @@
 import { useState, useMemo } from 'react';
 
 const SHAPES = [
-  { id: 'scallop', label: 'Scallop', desc: 'Perforated stamp' },
-  { id: 'classic', label: 'Classic', desc: 'Ring + inner' },
+  { id: 'scallop', label: 'Scallop', desc: 'Gold serrated' },
+  { id: 'classic', label: 'Classic', desc: 'Smooth double' },
   { id: 'gear', label: 'Gear', desc: 'Notched badge' },
 ];
 const PALETTES = [
@@ -16,69 +16,123 @@ const EMOJIS = ['🎉','🪙','🎪','🎤','🎧','🎨','🏆','🚀','🔥','
 export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, value: string }) {
   const [shape, setShape] = useState('scallop');
   const [palette, setPalette] = useState('cream-red');
-  const [topText, setTopText] = useState('ONCHAIN POAP');
-  const [bottomText, setBottomText] = useState('BASE SEP');
+  const [topText, setTopText] = useState('MY EVENT 2026');
+  const [bottomText, setBottomText] = useState('ONCHAIN • POAP • BASE');
+  const [participantText, setParticipantText] = useState('PARTICIPANT');
   const [center, setCenter] = useState('🏆');
   const [useEmoji, setUseEmoji] = useState(true);
   const pal = PALETTES.find(p=>p.id===palette)!;
 
   const svg = useMemo(()=>{
     const bg = pal.bg;
-    const acc = pal.accent;
-    const ink = pal.ink;
     const esc = (s:string)=> s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const top = esc(topText.slice(0,22));
-    const bot = esc(bottomText.slice(0,22));
+    const top = esc(topText.slice(0,22) || 'MY EVENT 2026');
+    const banner = esc(bottomText.slice(0,26) || 'ONCHAIN • POAP • BASE');
+    const participant = esc(participantText.slice(0,20) || 'PARTICIPANT');
     const mid = useEmoji ? center : esc(topText.slice(0,2) || 'PO');
 
-    // SCALL0P — perforated stamp, cream field, bold wax-red rings, big centered trophy
-    if (shape==='scallop') {
-      const dots = Array.from({length: 28}).map((_,i)=>{
-        const a=i*12.857*Math.PI/180;
-        return `<circle cx="${(100+88*Math.cos(a)).toFixed(1)}" cy="${(100+88*Math.sin(a)).toFixed(1)}" r="4.4"/>`;
-      }).join('');
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
-  <rect width="200" height="200" rx="22" fill="${bg}"/>
-  <g fill="${acc}" opacity="0.10">${dots}</g>
-  <circle cx="100" cy="100" r="73.5" fill="none" stroke="${acc}" stroke-width="3.2"/>
-  <circle cx="100" cy="100" r="66.5" fill="none" stroke="${acc}" stroke-width="1.1" stroke-dasharray="5 4.5" opacity="0.58"/>
-  <circle cx="100" cy="100" r="51.5" fill="white" stroke="${acc}" stroke-width="1.15"/>
-  <text x="100" y="66.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.5" font-weight="800" letter-spacing="1.7" fill="${ink}">${top}</text>
-  <text x="100" y="111" text-anchor="middle" dominant-baseline="middle" font-size="46" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,0.06))">${mid}</text>
-  <text x="100" y="143.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.6" font-weight="700" letter-spacing="1.25" fill="${ink}">${bot}</text>
-</svg>`;
-    }
-    // GEAR — notched badge, sharp teeth, centered art
-    if (shape==='gear') {
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
-  <rect width="200" height="200" rx="22" fill="${bg}"/>
-  <path d="M100 30.5 L104.2 43.2 L117.5 38.3 L120.4 51.0 L134.0 51.6 L130.0 64.6 L143.2 70.8 L136.6 82.6 L148.2 93.2 L136.6 103.8 L143.2 115.6 L130.0 121.8 L134.0 134.8 L120.4 135.4 L117.5 148.1 L104.2 143.2 L100 155.9 L95.8 143.2 L82.5 148.1 L79.6 135.4 L66 134.8 L70 121.8 L56.8 115.6 L63.4 103.8 L51.8 93.2 L63.4 82.6 L56.8 70.8 L70 64.6 L66 51.6 L79.6 51.0 L82.5 38.3 L95.8 43.2 Z" fill="${acc}"/>
-  <circle cx="100" cy="93.2" r="47.2" fill="white" stroke="${acc}" stroke-width="1.9"/>
-  <circle cx="100" cy="93.2" r="47.2" fill="none" stroke="${acc}" stroke-width="0.7" opacity="0.13"/>
-  <text x="100" y="76.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.2" font-weight="800" letter-spacing="1.5" fill="${ink}">${esc(topText.slice(0,15))}</text>
-  <text x="100" y="101.5" text-anchor="middle" dominant-baseline="middle" font-size="40">${mid}</text>
-  <text x="100" y="122.2" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.4" font-weight="700" letter-spacing="1.1" fill="${ink}">${esc(bottomText.slice(0,16))}</text>
-</svg>`;
-    }
-    // CLASSIC — clean double ring, generous white field
+    // Adapt TOP colors to our system: dark enamel -> deep ink-teal #0F2B26 (close to ink #2E1A0F but green), gold -> brass #C9A66B
+    const dark = '#0F2B26';
+    const gold = '#C8AD73';
+    const goldLight = '#EADDC0';
+    const goldDeep = '#A88A4A';
+    const paper = bg;
+
+    const defs = `
+  <defs>
+    <path id="topArc" d="M 38 76.5 A 62 62 0 0 1 162 76.5"/>
+    <path id="bannerPath" d="M 58 121.5 H 142"/>
+    <filter id="goldShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>`;
+
+    // Outer serrated bezel (gold) — 32 teeth
+    const serratedOuter = (()=> {
+      const teeth=32; let d='';
+      for(let i=0;i<teeth;i++){
+        const a0=(i/teeth)*360-90, a1=((i+0.5)/teeth)*360-90, a2=((i+1)/teeth)*360-90;
+        const rBase=88.5, rTip=94;
+        const x0=(100+rBase*Math.cos(a0*Math.PI/180)).toFixed(1);
+        const y0=(100+rBase*Math.sin(a0*Math.PI/180)).toFixed(1);
+        const xm=(100+rTip*Math.cos(a1*Math.PI/180)).toFixed(1);
+        const ym=(100+rTip*Math.sin(a1*Math.PI/180)).toFixed(1);
+        const x1=(100+rBase*Math.cos(a2*Math.PI/180)).toFixed(1);
+        const y1=(100+rBase*Math.sin(a2*Math.PI/180)).toFixed(1);
+        if(i===0) d+=`M ${x0} ${y0} `;
+        d+=`Q ${xm} ${ym} ${x1} ${y1} `;
+      }
+      d+='Z';
+      return `<path d="${d}" fill="${gold}" stroke="${goldDeep}" stroke-width="0.7"/>`;
+    })();
+
+    const smoothOuter = `<circle cx="100" cy="100" r="89.5" fill="${gold}" stroke="${goldDeep}" stroke-width="0.8"/>`;
+    const gearOuter = `<path d="M100 24.5 L104.8 38.2 L119.5 32.8 L122.8 46.8 L138.2 47.2 L133.2 61.2 L148.2 68.5 L141 81.2 L154.2 92.2 L141 103.2 L148.2 116 L133.2 123.2 L138.2 137.2 L122.8 137.6 L119.5 151.5 L104.8 146.2 L100 160.5 L95.2 146.2 L80.5 151.5 L77.2 137.6 L61.8 137.2 L66.8 123.2 L51.8 116 L59 103.2 L45.8 92.2 L59 81.2 L51.8 68.5 L66.8 61.2 L61.8 47.2 L77.2 46.8 L80.5 32.8 L95.2 38.2 Z" fill="${gold}" stroke="${goldDeep}" stroke-width="0.7"/>`;
+
+    const outer = shape==='scallop' ? serratedOuter : shape==='gear' ? gearOuter : smoothOuter;
+
+    // laurels — simple 5 leaves per side, gold
+    const laurelLeft = [82,89,97,105,112].map((y,i)=>{
+      const x = 68 - i*0.6; const s = 0.9 - i*0.05; const rot = -18 + i*4;
+      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 -7 C 3.2 -3 3.2 3 0 7 C -3.2 3 -3.2 -3 0 -7 Z M0 -7 C 1.2 -3 1.2 3 0 7" fill="${goldLight}" stroke="${goldDeep}" stroke-width="0.4" stroke-linejoin="round"/><path d="M0 0 L 6 1" stroke="${goldDeep}" stroke-width="0.35" opacity="0.9"/></g>`;
+    }).join('');
+    const laurelRight = [82,89,97,105,112].map((y,i)=>{
+      const x = 132 + i*0.6; const s = 0.9 - i*0.05; const rot = 18 - i*4;
+      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M0 -7 C 3.2 -3 3.2 3 0 7 C -3.2 3 -3.2 -3 0 -7 Z M0 -7 C 1.2 -3 1.2 3 0 7" fill="${goldLight}" stroke="${goldDeep}" stroke-width="0.4"/><path d="M0 0 L -6 1" stroke="${goldDeep}" stroke-width="0.35" opacity="0.9"/></g>`;
+    }).join('');
+
+    // star field — 8 tiny gold stars
+    const stars = [
+      [78,66],[122,66],[88,72],[112,72],[72,94],[128,94],[84,106],[116,106]
+    ].map(([x,y])=> `<g transform="translate(${x} ${y})"><path d="M0 -2.2 L0.7 -0.7 L2.2 0 L0.7 0.7 L0 2.2 L-0.7 0.7 L-2.2 0 L-0.7 -0.7 Z" fill="${goldLight}" opacity="0.95"/><circle cx="0" cy="0" r="0.35" fill="${goldDeep}" opacity="0.9"/></g>`).join('');
+
+    // central dark enamel
+    const innerDark = `<circle cx="100" cy="100" r="71.5" fill="${dark}" stroke="${gold}" stroke-width="1.4"/>
+  <circle cx="100" cy="100" r="69.2" fill="none" stroke="${goldLight}" stroke-width="0.45" opacity="0.35"/>
+  <circle cx="100" cy="100" r="52.8" fill="none" stroke="${gold}" stroke-width="0.45" stroke-dasharray="1.6 4.2" opacity="0.42"/>
+  <circle cx="100" cy="100" r="48.5" fill="none" stroke="${goldLight}" stroke-width="0.35" stroke-dasharray="0.8 6" opacity="0.18"/>`;
+
+    // banner — ONCHAIN • POAP • BASE
+    const bannerBox = `<g filter="url(#goldShadow)">
+    <rect x="44" y="118.5" width="112" height="15.2" rx="1.6" fill="none" stroke="${gold}" stroke-width="1.15"/>
+    <rect x="44" y="118.5" width="112" height="15.2" rx="1.6" fill="${dark}" />
+    <rect x="45.2" y="119.7" width="109.6" height="12.8" rx="1" fill="none" stroke="${goldLight}" stroke-width="0.4" opacity="0.55"/>
+  </g>
+  <text x="100" y="128.8" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="7.2" font-weight="700" letter-spacing="1.45" fill="${goldLight}">${banner}</text>`;
+
+    // participant bottom + star
+    const participantRow = `<text x="100" y="142.8" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="6.4" font-weight="600" letter-spacing="2.2" fill="${goldLight}" opacity="0.92">${participant}</text>
+  <g transform="translate(100 149)"><path d="M0 -2.4 L0.8 -0.8 L2.4 0 L0.8 0.8 L0 2.4 L-0.8 0.8 L-2.4 0 L-0.8 -0.8 Z" fill="${goldLight}"/><circle cx="0" cy="0" r="0.4" fill="${dark}"/></g>`;
+
+    // top curved MY EVENT 2026 — gold serif
+    const topArcText = `<text fill="${goldLight}" font-family="Cormorant Garamond, Georgia, serif" font-size="13.2" font-weight="700" letter-spacing="2.1" text-anchor="middle">
+    <textPath href="#topArc" startOffset="50%" dominant-baseline="middle">${top}</textPath>
+  </text>
+  <g transform="translate(100 56)"><path d="M0 -2.6 L0.9 -0.9 L2.6 0 L0.9 0.9 L0 2.6 L-0.9 0.9 L-2.6 0 L-0.9 -0.9 Z" fill="${goldLight}"/></g>`;
+
+    // center — user selected (ignore temple) : big emoji/icon on dark
+    const centerContent = `<text x="100" y="98.5" text-anchor="middle" dominant-baseline="middle" font-size="36" style="filter: drop-shadow(0 1.2px 0 rgba(0,0,0,0.5))">${mid}</text>`;
+
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
-  <rect width="200" height="200" rx="22" fill="${bg}"/>
-  <circle cx="100" cy="100" r="77.5" fill="none" stroke="${acc}" stroke-width="2.9"/>
-  <circle cx="100" cy="100" r="69.8" fill="none" stroke="${acc}" stroke-width="1.05" stroke-dasharray="6 4.2" opacity="0.52"/>
-  <circle cx="100" cy="100" r="52.8" fill="white"/>
-  <circle cx="100" cy="100" r="52.8" fill="none" stroke="${acc}" stroke-width="0.9" opacity="0.14"/>
-  <text x="100" y="70.5" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="10.2" font-weight="800" letter-spacing="1.6" fill="${ink}">${esc(topText.slice(0,18))}</text>
-  <text x="100" y="109.5" text-anchor="middle" dominant-baseline="middle" font-size="44">${mid}</text>
-  <text x="100" y="142.2" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="8.6" font-weight="700" letter-spacing="1.2" fill="${ink}">${esc(bottomText.slice(0,18))}</text>
+  <rect width="200" height="200" rx="22" fill="${paper}"/>
+  ${defs}
+  ${outer}
+  ${innerDark}
+  ${topArcText}
+  ${stars}
+  ${laurelLeft}
+  ${laurelRight}
+  ${centerContent}
+  ${bannerBox}
+  ${participantRow}
 </svg>`;
-  }, [shape, palette, topText, bottomText, center, useEmoji, pal]);
+  }, [shape, palette, topText, bottomText, participantText, center, useEmoji, pal]);
 
   const estBytes = new Blob([svg]).size;
   return (
     <div className="space-y-4">
-      {/* REVERTED to warm paper — not tall, a little bit tall (240-260px) */}
       <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
-        <div className="h-[260px] sm:h-[280px] flex items-center justify-center p-5 relative overflow-hidden" style={{background:'#FFFBF0'}}>
+        <div className="h-[260px] sm:h-[280px] flex items-center justify-center p-4 relative overflow-hidden" style={{background:'#FFFBF0'}}>
           <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
           <div className="w-full max-w-[220px] sm:max-w-[230px] aspect-square flex items-center justify-center p-0 relative">
             <div dangerouslySetInnerHTML={{__html: svg}} className="w-full h-full" />
@@ -99,9 +153,9 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
               return (
                 <button key={s.id} onClick={()=>setShape(s.id)} className={`relative p-3 pt-4 rounded-[2px] border-2 text-center overflow-hidden transition-all ${isActive ? 'bg-ink text-white border-ink shadow-lg' : 'bg-white border-line hover:border-brand-red/30 hover:shadow-md'}`}>
                   <div className="w-10 h-10 mx-auto rounded-[2px] border flex items-center justify-center mb-2" style={{background: isActive ? 'white' : '#FFFBF0', borderColor: isActive ? 'white' : '#F0DDC8'}}>
-                    {s.id==='scallop' && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke={isActive ? '#9B2C2C' : '#9B2C2C'} strokeWidth="1.5" strokeDasharray="2 2"/><circle cx="12" cy="12" r="4" fill={isActive ? '#9B2C2C' : '#FFFBF0'} stroke="#9B2C2C" strokeWidth="1"/></svg>}
-                    {s.id==='classic' && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={isActive ? '#9B2C2C' : '#9B2C2C'} strokeWidth="1.5"/><circle cx="12" cy="12" r="5.5" stroke={isActive ? '#9B2C2C' : '#9B2C2C'} strokeWidth="1" strokeDasharray="2 2" opacity="0.6"/><circle cx="12" cy="12" r="2" fill={isActive ? '#9B2C2C' : '#2E1A0F'}/></svg>}
-                    {s.id==='gear' && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" stroke={isActive ? '#9B2C2C' : '#9B2C2C'} strokeWidth="1.5"/><path d="M12 4.5v2M12 17.5v2M4.5 12h2M17.5 12h2M6.5 6.5l1.5 1.5M16 16l1.5 1.5M6.5 17.5l1.5-1.5M16 8l1.5-1.5" stroke={isActive ? '#9B2C2C' : '#C46A3D'} strokeWidth="1" strokeLinecap="round"/></svg>}
+                    {s.id==='scallop' && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke={isActive ? '#9B2C2C' : '#C8AD73'} strokeWidth="1.4" strokeDasharray="1.8 1.6"/><path d="M12 3.2 L12.6 5.1 L14.5 4.4 L15 6.3 L16.9 6 L16.7 8 L18.6 8.4 L17.8 10.1 L19.5 11 L18.1 12.5 L19.2 14.1 L17.4 14.9 L17.8 16.9 L16 16.7 L15.2 18.5 L13.6 17.4 L12 18.8 L10.4 17.4 L8.8 18.5 L8 16.7 L6.2 16.9 L6.6 14.9 L4.8 14.1 L5.9 12.5 L4.5 11 L6.2 10.1 L5.4 8.4 L7.3 8 L7.1 6 L9 6.3 L9.5 4.4 L11.4 5.1 Z" fill={isActive ? '#9B2C2C' : '#C8AD73'} opacity="0.25"/><circle cx="12" cy="12" r="3.2" fill={isActive ? '#fff' : '#FFFBF0'} stroke={isActive ? '#fff' : '#C8AD73'} strokeWidth="1"/></svg>}
+                    {s.id==='classic' && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={isActive ? '#9B2C2C' : '#C8AD73'} strokeWidth="1.5"/><circle cx="12" cy="12" r="6" stroke={isActive ? '#9B2C2C' : '#C8AD73'} strokeWidth="0.9" strokeDasharray="2.2 2" opacity="0.6"/><circle cx="12" cy="12" r="1.8" fill={isActive ? '#fff' : '#C8AD73'}/></svg>}
+                    {s.id==='gear' && <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Z" stroke={isActive ? '#9B2C2C' : '#C8AD73'} strokeWidth="1.4"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6.1 6.1l1.6 1.6M16.3 16.3l1.6 1.6M6.1 17.9l1.6-1.6M16.3 7.7l1.6-1.6" stroke={isActive ? '#9B2C2C' : '#C8AD73'} strokeWidth="1" strokeLinecap="round"/></svg>}
                   </div>
                   <div className={`text-sm font-medium ${isActive ? 'text-white' : 'text-ink'}`}>{s.label}</div><div className={`text-[11px] ${isActive ? 'text-white/70' : 'text-muted'}`}>{s.desc}</div>
                   {isActive && <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red rounded-full flex items-center justify-center text-white text-[10px]">✓</div>}
@@ -122,23 +176,28 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
           <div className="text-xs text-muted mt-1">{pal.label}</div>
         </div>
         <div>
-          <div className="text-xs font-medium uppercase tracking-widest text-muted">Center</div>
+          <div className="text-xs font-medium uppercase tracking-widest text-muted">Center icon</div>
           <div className="mt-2 flex gap-1.5 flex-wrap">
             {EMOJIS.map(e=> (
               <button key={e} onClick={()=>{setCenter(e); setUseEmoji(true);}} className={`w-9 h-9 rounded-[2px] border flex items-center justify-center text-lg ${center===e && useEmoji ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line hover:border-brass'}`}>{e}</button>
             ))}
           </div>
-          <label className="mt-3 flex items-center gap-2 text-xs"><input type="checkbox" checked={useEmoji} onChange={e=>setUseEmoji(e.target.checked)} /> Use emoji/initials as center</label>
+          <label className="mt-3 flex items-center gap-2 text-xs"><input type="checkbox" checked={useEmoji} onChange={e=>setUseEmoji(e.target.checked)} /> Use icon in middle (uncheck to show initials)</label>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium">Top text ({topText.length}/22)</label>
-            <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="ONCHAIN POAP" />
+            <label className="text-xs font-medium">Top arc ({topText.length}/22)</label>
+            <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="MY EVENT 2026" />
           </div>
           <div>
-            <label className="text-xs font-medium">Bottom text ({bottomText.length}/22)</label>
-            <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="BASE SEP" />
+            <label className="text-xs font-medium">Banner ({bottomText.length}/26)</label>
+            <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,26))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="ONCHAIN • POAP • BASE" />
           </div>
+        </div>
+        <div>
+          <label className="text-xs font-medium">Event writing — bottom ({participantText.length}/20)</label>
+          <input value={participantText} onChange={e=>setParticipantText(e.target.value.slice(0,20))} className="mt-1 w-full rounded-[2px] border border-line px-3 py-2 text-sm" placeholder="PARTICIPANT" />
+          <div className="text-xs text-muted mt-1">Appears under the banner — e.g., PARTICIPANT, SPEAKER, STAFF, VIP. Editable like top/banner.</div>
         </div>
       </div>
     </div>
