@@ -38,10 +38,8 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     const goldDeep = '#A88A4A';
     const paper = bg;
 
-    // topArc: scallop+classic = well inside gold circle (fit well), gear = up to circle edge (not outside)
-    const topArcD = shape === 'gear'
-      ? 'M 42 78 A 64 64 0 0 1 158 78'   // gear: higher, reaches close to gold ring
-      : 'M 48 82 A 58 58 0 0 1 152 82'; // scallop/classic: fit well inside gold circle
+    // topArc: all shapes — MY EVENT 2026 goes up to the gold circle but not outside
+    const topArcD = 'M 42 78 A 64 64 0 0 1 158 78';
     const defs = `
   <defs>
     <path id="topArc" d="${topArcD}"/>
@@ -71,7 +69,24 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     })();
 
     const smoothOuter = `<circle cx="100" cy="100" r="91.5" fill="${gold}" stroke="${goldDeep}" stroke-width="0.85"/>`;
-    const gearOuter = `<path d="M100 22.5 L105 37 L120.5 31.5 L123.8 46 L139.5 46.2 L134.2 60.8 L149.5 68 L142 81.5 L155.5 92.2 L142 103 L149.5 116.5 L134.2 123.5 L139.5 138 L123.8 138.5 L120.5 152.5 L105 147 L100 162.5 L95 147 L79.5 152.5 L76.2 138.5 L60.5 138 L65.8 123.5 L50.5 116.5 L58 103 L44.5 92.2 L58 81.5 L50.5 68 L65.8 60.8 L60.5 46.2 L76.2 46 L79.5 31.5 L95 37 Z" fill="${gold}" stroke="${goldDeep}" stroke-width="0.75"/>`;
+    const gearOuter = (()=> {
+      const teeth=16; let d='';
+      for(let i=0;i<teeth;i++){
+        const a0=(i/teeth)*360-90, a1=((i+0.5)/teeth)*360-90, a2=((i+1)/teeth)*360-90;
+        const rBase=86.5, rTip=93.2;
+        const x0=(100+rBase*Math.cos(a0*Math.PI/180)).toFixed(1);
+        const y0=(100+rBase*Math.sin(a0*Math.PI/180)).toFixed(1);
+        const xm=(100+rTip*Math.cos(a1*Math.PI/180)).toFixed(1);
+        const ym=(100+rTip*Math.sin(a1*Math.PI/180)).toFixed(1);
+        const x1=(100+rBase*Math.cos(a2*Math.PI/180)).toFixed(1);
+        const y1=(100+rBase*Math.sin(a2*Math.PI/180)).toFixed(1);
+        if(i===0) d+=`M ${x0} ${y0} `;
+        // gear notch: sharp tip
+        d+=`L ${xm} ${ym} L ${x1} ${y1} `;
+      }
+      d+='Z';
+      return `<path d="${d}" fill="${gold}" stroke="${goldDeep}" stroke-width="0.75" stroke-linejoin="round"/>`;
+    })();
 
     const outer = shape==='scallop' ? serratedOuter : shape==='gear' ? gearOuter : smoothOuter;
 
