@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { useState } from 'react';
-import { http } from 'wagmi';
+import { WagmiProvider, http } from 'wagmi';
 
 export const wagmiConfig = getDefaultConfig({
   appName: 'Onchain POAPs — Archive',
