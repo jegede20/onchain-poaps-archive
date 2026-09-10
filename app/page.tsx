@@ -47,20 +47,29 @@ export default function Home() {
                 <Link href="/docs" className="ghost-button text-[15px] px-6">Read Docs</Link>
               </div>
               <div className="mt-10 grid grid-cols-3 gap-3 max-w-[520px]">
-                <Link href="/docs/public-minting" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
-                  <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Public</div>
-                  <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">Pause / Resume</div>
-                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">30d creator window →</div>
+                <Link href="/docs/public-minting" className="group rounded-[2px] border border-line bg-white p-4 hover:border-ink hover:shadow-sm transition-all flex flex-col">
+                  <div className="w-8 h-8 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center group-hover:bg-ink group-hover:border-ink group-hover:text-white transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
+                  </div>
+                  <div className="mt-3 text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Public</div>
+                  <div className="mt-1 font-medium text-sm leading-tight group-hover:text-brand-red transition-colors">Anyone can mint</div>
+                  <div className="mt-1 text-xs leading-4 text-muted">Pause or resume within 30 days →</div>
                 </Link>
-                <Link href="/docs/allowlists" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
-                  <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Allowlist</div>
-                  <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">Merkle</div>
-                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">One-time root →</div>
+                <Link href="/docs/allowlists" className="group rounded-[2px] border border-line bg-white p-4 hover:border-ink hover:shadow-sm transition-all flex flex-col">
+                  <div className="w-8 h-8 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center group-hover:bg-ink group-hover:border-ink group-hover:text-white transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M8 6h10M8 12h10M8 18h10"/><path d="M3 6h0.5M3 12h0.5M3 18h0.5" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </div>
+                  <div className="mt-3 text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Allowlist</div>
+                  <div className="mt-1 font-medium text-sm leading-tight group-hover:text-brand-red transition-colors">Invite only</div>
+                  <div className="mt-1 text-xs leading-4 text-muted">Set Merkle root once →</div>
                 </Link>
-                <Link href="/docs/signature-minting" className="archive-card p-4 interactive-card group block hover:border-brand-red/25 hover:shadow-md hover:-translate-y-[1px] transition-all cursor-pointer">
-                  <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Signature</div>
-                  <div className="mt-1 font-medium text-sm tracking-wide group-hover:text-brand-red transition-colors">37d</div>
-                  <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">QR for events →</div>
+                <Link href="/docs/signature-minting" className="group rounded-[2px] border border-line bg-white p-4 hover:border-ink hover:shadow-sm transition-all flex flex-col">
+                  <div className="w-8 h-8 rounded-[2px] bg-paper-muted border border-line flex items-center justify-center group-hover:bg-ink group-hover:border-ink group-hover:text-white transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 18l-4 1 1-4 12.5-11.5z"/><path d="M14 7l3 3"/></svg>
+                  </div>
+                  <div className="mt-3 text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Signature</div>
+                  <div className="mt-1 font-medium text-sm leading-tight group-hover:text-brand-red transition-colors">QR for events</div>
+                  <div className="mt-1 text-xs leading-4 text-muted">Signed per wallet, 37 days →</div>
                 </Link>
               </div>
             </div>

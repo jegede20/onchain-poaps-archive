@@ -1,132 +1,191 @@
-const CONTENT: Record<string, { title: string, body: string }> = {
-  "creating-poap": { title: "Creating a POAP", body: `
-Register via registerEvent(name, description, eventDate, location, allowlistRoot, svgImage, externalUrl, flags).
+import Link from 'next/link';
 
-Validation (onchain reverts POAP__InvalidValue):
-- name 1–128 (required)
-- description ≤512 (optional, sanitize newlines)
-- svgImage non-empty (required) — stored Base64 via SSTORE2
-- location ≤128, externalUrl ≤128
-- flags 0–3: 0 private+transferable, 1 soulbound, 2 public, 3 public+soulbound
-- allowlistRoot 0x0 = none, else set once within 30d
+const CONTENT: Record<string, { title: string, summary: string, body: string }> = {
+  "creating-poap": { title: "Creating a POAP", summary: "Register a new event onchain — what is required and what is optional.", body: `Register by calling registerEvent on Base Sepolia.
 
-Flow in Archive: Create wizard → 3 steps (artwork/name → distribution → details) with live SVG preview + SVGO-lite savings + gas estimate (200 gas/byte + 75k). Newlines sanitized to avoid uri() break.
-`},
-  "metadata": { title: "POAP Metadata", body: `
-uri(eventId) returns data:application/json;base64 with:
-{ name, description, image: data:image/svg+xml;base64,<svg>, attributes: [{trait_type:Event},{Location},{Date},{EventId},{Multichain EventId},{Creator},{Soulbound}], external_url }
+What you must provide:
+• Name — 1 to 128 characters, required. Keep it short and clear.
+• SVG image — required. This is the artwork people mint. It is stored onchain via SSTORE2.
+• Flags — choose public (anyone can mint) and soulbound (cannot be transferred).
 
-Multichain EventId: eip155:84532:0xC3243...:eventId (CAIP-2). SVG is read from SSTORE2 pointer and Base64 encoded onchain.
+What you can add later (optional):
+• Description — up to 512 characters
+• Location — up to 128
+• Event date — timestamp
+• External URL — up to 128
+• Allowlist root — leave as 0x0 for now, set later if you need invite-only
 
-Archive decodes with atob + JSON.parse, repairing literal newlines if present (Event #6 bug).
-`},
-  "svg-requirements": { title: "SVG Requirements / Optimization", body: `
-Keep SVG <100KB recommended, theoretical max ~149KB at 30M gas (200 gas/byte + overhead).
+In this app: use Create → 3 steps. Step 1 checks name and SVG size, shows live preview and gas estimate. Newlines and quotes are cleaned automatically so the onchain metadata stays valid.`},
 
-SSTORE2 table (Base):
-- 1KB ~50k gas (vs 200k vanilla) 75%
-- 5KB ~200k (vs 1M) 80%
-- 10KB ~350k (vs 2M) 82%
+  "metadata": { title: "POAP Metadata", summary: "How uri() stores and returns data, and how we read it.", body: `Each POAP has one uri(eventId) that returns:
 
-SVGO-lite in Archive: strip <?xml, comments, <metadata>, empty <g>, collapse whitespace, round 2 decimals, shorten #FFFFFF→#FFF. If result fails to parse, original is kept. Shows bytes saved + cost at 0.1 gwei (~$4.8 for 10KB).
-`},
-  "soulbound": { title: "Soulbound POAPs", body: `
-Set flags 1 or 3 to make soulbound. Contract overrides _update to revert POAP__SoulboundNotTransferable for any from!=0 && to!=0.
+data:application/json;base64,{ name, description, image, attributes, external_url }
 
-Use for attendance proofs where transfer would dilute meaning. Gallery shows Soulbound badge. Not toggleable after creation.
-`},
-  "public-minting": { title: "Public Minting", body: `
-When isPublic=true, anyone can call mint(eventId) (no timelock). Creator can toggle via updateEventPublic within 30d.
+• image is data:image/svg+xml;base64,<your SVG> — fully onchain via SSTORE2 pointer.
+• Multichain ID: eip155:84532:0xC3243…:eventId — same ID on any chain (CAIP-2).
 
-Archive: toggle shows current status + countdown. Eligibility card is green when eligible, amber when disabled, red when already claimed.
+How the app reads it: take the base64 part after the comma, atob, JSON.parse, show image and fields. If decoding fails (Event #6 had a raw newline), we repair it and try again.`},
 
-Error POAP__EventNotPublic if attempting mint while closed.
-`},
-  "allowlists": { title: "Allowlists", body: `
-Merkle root approach: creator publishes root, attendees prove membership.
+  "svg-requirements": { title: "SVG & Gas", summary: "How large your SVG can be and what it costs.", body: `Aim for under 100KB. In practice Base can hold ~120KB before hitting gas limits.
 
-Creation: leaf = keccak256(abi.encodePacked(address)). Tree = MerkleTree(leaves, keccak256, {sortPairs:true}). Root set via updateAllowlistRoot once within 30d.
+SSTORE2 saves gas vs normal storage:
+• 1KB costs about 50k gas (instead of 200k) — 75% cheaper
+• 5KB about 200k (instead of 1M)
+• 10KB about 350k (instead of 2M)
 
-Archive builder: paste addresses (any separator) → dedupe → bad-line report → preview root → verify sample proof using contract fold → export proofs JSON/CSV.
-`},
-  "proofs": { title: "Generating Allowlist Proofs", body: `
-Creator exports ONE public JSON: { root, addresses, proofs: {address: proof[]} }
+Tip in this app: the Stamp Studio designs are 1–3KB — very cheap. If you paste an exported SVG, the optimizer removes comments and whitespace and shows bytes saved. At 0.1 gwei, 10KB is roughly $1–5.`},
 
-Attendee either:
-- Loads creator proofs JSON, browser derives its own proof, or
-- Pastes raw list → app rebuilds tree locally and finds proof automatically (no server).
+  "soulbound": { title: "Soulbound POAPs", summary: "When a proof should stay with the original wallet.", body: `Choose soulbound at creation (flags 1 or 3). The contract blocks any transfer after mint — if from is not zero and to is not zero, it reverts.
 
-Verification: MerkleProof.verify(proof, root, leaf). Archive verifies locally before onchain.
+Use soulbound for attendance proofs where resale would break trust. Use transferable if you want people to be able to send or trade it.
 
-Share proofs via file, not per-email, to keep it simple.
-`},
-  "signature-minting": { title: "Signature Minting", body: `
-Valid for 37 days (30 + 7 grace) after createdAt.
+You cannot change this later. The gallery shows a Soulbound badge.`},
 
-Steps:
-1. Creator: message = keccak256(abi.encodePacked(eventId, chainId, recipient))
-2. Creator: signature = signMessage(toEthSignedMessageHash(message)) via personal_sign (no gas)
-3. Recipient: call mintWithSignature(eventId, signature) — contract recovers signer and checks == creator + hasClaimed false + timelock.
+  "public-minting": { title: "Public Minting", summary: "Open minting and how the creator can pause or resume.", body: `If public is on, anyone can call mint(eventId) — no list, no signature.
 
-Archive Signature Studio does in-browser signing, shows countdown, exports JSON/CSV + per-recipient QR.
+The creator can flip it with updateEventPublic any number of times, but only within the first 30 days.
 
-Reverts: POAP__InvalidValue("signer") if wrong signer, AlreadyClaimed if dup, TimeLockExpired if >37d.
-`},
-  "qr-distribution": { title: "QR-Code Distribution", body: `
-For live events: DO NOT put a static QR with a pre-signed signature — recipient is inside the hash, so one signature works for only one wallet.
+In the app:
+• The event page shows Public Open / Closed and time left.
+• The eligibility box is green when you can mint, amber when closed, red if you already hold 1.
+• If you try to mint while closed, the contract returns EventNotPublic.`},
 
-Working arrangements:
-1. Per-attendee QR: creator batches signs list pre-event → prints one QR per person (labeled) → attendee scans own QR
-2. Live claim table: attendee enters address on tablet → creator signs on the spot → QR shown for that wallet
-3. Claim link: signed link https://archive.../event/id?sig=...&recipient=0x… → attendee opens on phone
+  "allowlists": { title: "Allowlists", summary: "A one-time invite list using a Merkle root.", body: `Use an allowlist when you want invite-only mints.
 
-Archive generates printable QR PNGs (400px) + per-ATM sheets via qrcode lib.
-`},
-  "permissions": { title: "Creator Permissions", body: `
-Creator = msg.sender of registerEvent. Controls within 30d:
+How it works in plain terms:
+• You publish a single root hash onchain. Attendees prove they are on the list with a short proof.
+• Leaf = keccak256(address). Tree is built with sortPairs true. Root is set once via updateAllowlistRoot within 30 days.
 
-- updateAllowlistRoot: once, if root==0
-- updateEventPublic: toggle bool any times
-- creatorMint: batch ≤101, skips alreadyClaimed without revert
+In this app (Create → Creator Console):
+• Paste addresses (any separator, one per line or comma)
+• App removes duplicates, warns about bad lines, shows preview root
+• Click Set Allowlist Root Onchain, then Download proofs JSON to share with your list.`},
 
-All guarded by onlyCreator + onlyBeforeLock(createdAt+30d). After window, event is immutable except allowlistMint (no timelock) and mintWithSignature (37d).
-`},
-  "deadlines": { title: "Minting Deadlines", body: `
-- Public toggle / allowlist root / creatorMint: 30 days after createdAt (block.timestamp checked)
-- Signature mint: 37 days (30 + 7)
-- Allowlist mint & public mint (if enabled): no expiry (allowlist always available per README table)
+  "proofs": { title: "Allowlist Proofs", summary: "What attendees actually submit.", body: `After the creator publishes a root and shares proofs, an attendee needs to submit their proof array.
 
-Archive shows countdowns: Dd Hh or Expired. Eligibility card respects all.
+Two easy ways:
+• If you have the creator’s proofs JSON, the app can load it and find your proof automatically.
+• Or paste the raw address list — the app rebuilds the tree locally and derives your proof, no server needed.
 
-Plan ahead for events with late distribution — use allowlist for permanent, sig for live.
-`},
-  "verification": { title: "How to Verify Minted POAPs", body: `
-- Onchain: balanceOf(account, id) ==1 means owns. Archive does balanceOfBatch for gallery.
-- Metadata: decode uri(id) base64 JSON, view image data URI.
-- Explorer: BaseScan Sepolia transaction + contract read events totalEvents / hasClaimed / getMultichainEventId.
-- Market: OpenSea link https://opensea.io/assets/base/0xC3243.../id (if indexed, otherwise BaseScan is source of truth).
+The app checks the proof locally before sending. You share the proofs file once, not per person.`},
 
-Creator can verify attendees via NewMint events.
-`},
+  "signature-minting": { title: "Signature Minting", summary: "Creator signs per wallet for 37 days — great for QR codes.", body: `Valid for 37 days after creation (30 days + 7 days grace).
+
+Plain flow:
+1. Creator builds a message = keccak256(eventId, chainId 84532, recipient address)
+2. Creator signs it with personal_sign — no gas, just a wallet signature.
+3. The recipient calls mintWithSignature(eventId, signature). The contract checks the signer is the creator and that the wallet has not claimed before.
+
+In the app, the Signature Studio does steps 1–2 in your browser, shows time left, and can create a QR for that one recipient.
+
+Errors you may see: InvalidValue (wrong signer), AlreadyClaimed (1 per wallet), TimeLockExpired (after 37 days).`},
+
+  "qr-distribution": { title: "QR Distribution", summary: "How to use QR codes at real events without breaks.", body: `Important: one signature = one wallet. Do not print a single static QR with one signature — it will only work for that one wallet.
+
+Three patterns that work:
+• Per-person QR — batch sign a list before the event, print one QR per person (label them), each attendee scans their own.
+• Live table — attendee types their address on a tablet, creator signs on the spot, QR appears for that wallet.
+• Signed link — https://archive…/event/id?sig=0x…&recipient=0x… — attendee opens it on their phone.
+
+The app can generate 400px QR PNGs and a zip of per-recipient sheets via the qrcode library.`},
+
+  "permissions": { title: "Creator Permissions", summary: "What only the creator can do, and when that ends.", body: `Creator = the address that called registerEvent.
+
+Within the first 30 days the creator can:
+• Set allowlist root — once, only if still 0x0
+• Toggle public — any number of times
+• Batch mint to up to 101 addresses via creatorMint (skips those who already hold it, no revert)
+
+After 30 days the event is locked except for attendee mints (allowlist and signature within 37 days). All checks enforce onlyCreator and the time window.`},
+
+  "deadlines": { title: "Deadlines", summary: "All time windows at a glance.", body: `• Public toggle, allowlist root, creator batch mint — 30 days from createdAt.
+• Signature mint — 37 days from createdAt.
+• Allowlist mint and public mint (if open) — no expiry beyond those windows; allowlist stays usable after 30 days if root was set in time.
+
+The app shows live countdowns (e.g., 12d 4h or Expired) in the Creator Analytics card and Eligibility box. Plan invite-only events with allowlist if you need attendance after 37 days.`},
+
+  "verification": { title: "Verification", summary: "How anyone confirms a POAP is real.", body: `• Onchain: balanceOf(account, id) equals 1 means they own it. The gallery uses balanceOfBatch to show Owned.
+• Metadata: decode uri(id) base64 JSON to see image data URI.
+• Explorer: check totalEvents, hasClaimed, and getMultichainEventId on BaseScan Sepolia.
+• Market: OpenSea link is https://opensea.io/assets/base/0xC3249…/id — if not indexed, BaseScan is the source of truth.
+
+NewMint events let the creator see who minted and when.`},
 };
+
+const ORDER = Object.keys(CONTENT);
 
 export default async function DocPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const doc = CONTENT[slug];
-  if (!doc) return <div className="min-w-0 max-w-3xl mx-auto w-full px-4 py-16">Not found. <a href="/docs" className="underline text-brand-red">Docs</a></div>;
+  if (!doc) return <div className="min-w-0 max-w-3xl mx-auto w-full px-4 py-16">Not found. <Link href="/docs" className="underline text-brand-red">Back to Docs</Link></div>;
+  const idx = ORDER.indexOf(slug);
+  const prev = idx > 0 ? ORDER[idx-1] : null;
+  const next = idx < ORDER.length-1 ? ORDER[idx+1] : null;
+
+  const paragraphs = doc.body.split('\n\n');
+
   return (
     <div className="min-w-0 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10">
-      <a href="/docs" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-red transition-colors">← Docs</a>
-      <div className="mt-4">
-        <div className="hero-pill text-[10px] px-3 py-1">
-          <span className="hero-pill-dot" />
-          {slug}
-        </div>
-        <h1 className="mt-4 font-display text-3xl sm:text-4xl leading-tight tracking-tight">{doc.title}</h1>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs text-muted">
+        <Link href="/docs" className="hover:text-brand-red">Docs</Link>
+        <span className="opacity-40">/</span>
+        <span className="text-ink font-medium">{slug}</span>
       </div>
-      <div className="mt-6 sm:mt-8 archive-card p-5 sm:p-8 overflow-hidden">
-        <pre className="whitespace-pre-wrap break-words text-[14px] leading-7 text-ink font-sans">{doc.body.trim()}</pre>
-        <div className="mt-8 archive-inset p-4 text-xs text-muted leading-6">Source: OnchainPOAPs contract (Poap.sol) + README + BaseScan. Contract is source of truth for types, reverts, and windows.</div>
+
+      {/* Header */}
+      <div className="mt-4 rounded-[2px] border border-line bg-[#FFFBF0] p-6 sm:p-7">
+        <div className="inline-flex items-center gap-2 rounded-[2px] bg-white border border-line px-2.5 py-1 text-[11px] mono-num">
+          <span className="w-2 h-2 rounded-full bg-brand-red" /> {slug}
+        </div>
+        <h1 className="mt-4 font-display text-2xl sm:text-3xl font-medium tracking-tight leading-tight">{doc.title}</h1>
+        <p className="mt-2 text-sm leading-6 text-muted">{doc.summary}</p>
+      </div>
+
+      {/* Body — organized */}
+      <div className="mt-6 rounded-[2px] border border-line bg-white overflow-hidden">
+        <div className="p-6 sm:p-8">
+          <div className="space-y-5">
+            {paragraphs.map((block, i) => {
+              const isList = block.trim().startsWith('•');
+              if (isList) {
+                const items = block.split('\n').map(s=> s.replace(/^•\s*/, '').trim()).filter(Boolean);
+                return (
+                  <ul key={i} className="list-disc pl-5 space-y-2 text-[15px] leading-7 text-ink">
+                    {items.map((it, j) => (
+                      <li key={j} className="marker:text-brand-red">{it}</li>
+                    ))}
+                  </ul>
+                );
+              }
+              // code-like block with → or with ` `? keep as paragraph but mono for code lines
+              const isCodeish = block.includes('await contract') || block.includes('https://');
+              if (isCodeish) {
+                return (
+                  <pre key={i} className="overflow-x-auto rounded-[2px] bg-ink p-4 text-xs leading-6 text-paper mono-num whitespace-pre-wrap break-words">
+                    {block.trim()}
+                  </pre>
+                );
+              }
+              return <p key={i} className="text-[15px] leading-7 text-ink">{block.trim()}</p>;
+            })}
+          </div>
+
+          <div className="mt-8 rounded-[2px] border border-line bg-paper-muted p-4 text-xs leading-6 text-muted">
+            Source: Onchain POAPs contract at <span className="mono-num text-ink">0xC3249…9de6</span> on Base Sepolia (84532). Contract is the final source of truth for rules and errors.
+          </div>
+        </div>
+
+        {/* Prev / Next — simple */}
+        <div className="flex items-center justify-between gap-3 border-t border-line bg-paper-muted/40 px-6 py-4">
+          {prev ? <Link href={`/docs/${prev}`} className="text-sm font-medium hover:text-brand-red">← {CONTENT[prev].title}</Link> : <span />}
+          {next ? <Link href={`/docs/${next}`} className="text-sm font-medium hover:text-brand-red">{CONTENT[next].title} →</Link> : <Link href="/docs" className="text-sm font-medium hover:text-brand-red">Back to Docs →</Link>}
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-2 text-xs">
+        <Link href="/docs" className="rounded-[2px] border border-line bg-white px-3 py-1.5 hover:border-ink">All docs</Link>
+        <Link href="/create" className="rounded-[2px] bg-ink text-white px-3 py-1.5">Create POAP →</Link>
       </div>
     </div>
   );
