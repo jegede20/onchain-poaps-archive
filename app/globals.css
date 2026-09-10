@@ -72,7 +72,7 @@ body {
 .archive-card {
   background: var(--paper-elevated);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 6px;
   box-shadow: 0 1px 2px rgba(62,35,20,0.06), 0 8px 24px rgba(62,35,20,0.08);
   transition: all 0.2s ease;
 }
@@ -82,19 +82,19 @@ body {
 .archive-inset {
   background: var(--paper-muted);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 4px;
 }
 .archive-warm {
   background: linear-gradient(180deg, var(--paper-elevated) 0%, var(--paper-warm) 100%);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 6px;
 }
 .ink-button {
   background: var(--brand-red);
   color: white;
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 10px 18px;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 14px;
   transition: all 0.15s;
   box-shadow: 0 2px 8px rgba(155,44,44,0.25);
@@ -105,9 +105,9 @@ body {
 .brass-button {
   background: var(--brass);
   color: white;
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 10px 18px;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 14px;
   box-shadow: 0 2px 8px rgba(196,106,61,0.25);
   letter-spacing: 0.01em;
@@ -117,27 +117,27 @@ body {
   background: white;
   border: 1px solid var(--line-strong);
   color: var(--ink);
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 9px 16px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.01em;
 }
 .ghost-button:hover { background: var(--paper-muted); border-color: var(--brass); }
 
-/* Hero pill — FREE · NO BACKEND style but brand-red */
+/* Hero pill — FREE · NO BACKEND style but brand-red — VERY sharp */
 .hero-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--brand-red);
   background: var(--brand-red-light);
   border: 1px solid #FECACA;
-  border-radius: 999px;
+  border-radius: 2px;
   padding: 6px 12px;
   line-height: 1;
 }
@@ -154,13 +154,13 @@ body {
   50% { opacity: 0.7; transform: scale(1.15); }
 }
 
-/* Hero heading — screenshot inspired — BIG & BOLD */
+/* Hero heading — screenshot inspired — BIG but reduced bold */
 .hero-title {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-size: clamp(2.8rem, 9vw, 4.6rem);
   line-height: 0.9;
-  letter-spacing: -0.04em;
-  font-weight: 600;
+  letter-spacing: -0.035em;
+  font-weight: 500;
   color: var(--ink);
 }
 .hero-title em {
@@ -178,12 +178,25 @@ body {
   line-height: 1.6;
 }
 
-/* Connect button — same as ink-button */
+/* Section heading — subtle bold — reduced */
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--brand-red);
+}
+.section-title {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Connect button — same as ink-button — VERY sharp */
 .rk-connect-override {
   background: var(--brand-red) !important;
   color: white !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
+  border-radius: 2px !important;
+  font-weight: 500 !important;
   box-shadow: 0 2px 8px rgba(155,44,44,0.25) !important;
   border: none !important;
 }
@@ -191,13 +204,13 @@ body {
   background: var(--brand-red-strong) !important;
 }
 
-/* RainbowKit custom button */
+/* RainbowKit custom button — VERY sharp */
 .custom-connect {
   background: var(--brand-red);
   color: white;
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 9px 16px;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 13px;
   display: inline-flex;
   align-items: center;
@@ -239,10 +252,10 @@ body {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid #A7D9C4; }
@@ -257,16 +270,16 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 2px; }
 
-/* Bottom nav */
+/* Bottom nav — sharp */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 50;
-  background: rgba(255,251,240,0.90);
+  background: rgba(255,251,240,0.92);
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
@@ -285,9 +298,9 @@ body {
   align-items: center;
   gap: 3px;
   padding: 6px 4px;
-  border-radius: 12px;
+  border-radius: 2px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--muted);
   transition: all 0.15s;
@@ -296,7 +309,7 @@ body {
   color: var(--brand-red);
   background: var(--brand-red-muted);
 }
-.bottom-nav-item svg { width: 22px; height: 22px; }
+.bottom-nav-item svg { width: 20px; height: 20px; }
 
 /* Wax seal */
 .wax-seal {

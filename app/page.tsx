@@ -50,18 +50,18 @@ export default function Home() {
               </div>
               <div className="mt-10 grid grid-cols-3 gap-3 max-w-[520px]">
                 <div className="archive-card p-4 interactive-card group">
-                  <div className="text-[10px] uppercase tracking-[0.16em] font-bold text-brand-red">Public</div>
-                  <div className="mt-1 font-bold text-sm tracking-wide">Pause / Resume</div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Public</div>
+                  <div className="mt-1 font-medium text-sm tracking-wide">Pause / Resume</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">30d creator window</div>
                 </div>
                 <div className="archive-card p-4 interactive-card group">
-                  <div className="text-[10px] uppercase tracking-[0.16em] font-bold text-brand-red">Allowlist</div>
-                  <div className="mt-1 font-bold text-sm tracking-wide">Merkle</div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Allowlist</div>
+                  <div className="mt-1 font-medium text-sm tracking-wide">Merkle</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">One-time root</div>
                 </div>
                 <div className="archive-card p-4 interactive-card group">
-                  <div className="text-[10px] uppercase tracking-[0.16em] font-bold text-brand-red">Signature</div>
-                  <div className="mt-1 font-bold text-sm tracking-wide">37d</div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Signature</div>
+                  <div className="mt-1 font-medium text-sm tracking-wide">37d</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">QR for events</div>
                 </div>
               </div>
@@ -71,26 +71,89 @@ export default function Home() {
                 <div className="absolute inset-0 opacity-[0.07]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize:'20px 20px'}} />
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/20 rounded-full blur-2xl" />
                 <div className="relative">
-                  <div className="text-[10px] tracking-[0.16em] uppercase font-semibold text-brass flex items-center gap-2">
+                  <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brass flex items-center gap-2">
                     <span className="w-6 h-px bg-brass/40" /> Archive Principles
                   </div>
-                  <h3 className="mt-4 font-display text-2xl leading-tight text-white">Every byte is the receipt.</h3>
+                  <h3 className="mt-4 font-display text-2xl font-medium leading-tight text-white">Every byte is the receipt.</h3>
                   <ul className="mt-6 space-y-3.5 text-[13px] text-white/75 leading-6">
                     <li className="flex gap-3"><span className="text-brass mt-px">—</span> SVG stored via SSTORE2, metadata is base64 onchain.</li>
                     <li className="flex gap-3"><span className="text-brass mt-px">—</span> Max 1 per wallet, soulbound optional, non-transferable enforced.</li>
                     <li className="flex gap-3"><span className="text-brass mt-px">—</span> Farcaster Mini App ready — wallet auto-connects inside Warpcast.</li>
                   </ul>
                   <div className="mt-8 p-3.5 rounded-xl bg-white/10 border border-white/10 mono-num text-xs backdrop-blur">
-                    <div className="text-white/50 text-[10px] uppercase tracking-widest font-semibold">Contract</div>
-                    <div className="font-semibold text-white mt-0.5">0xC3249…9de6 • eip155:84532</div>
+                    <div className="text-white/50 text-[10px] uppercase tracking-widest font-medium">Contract</div>
+                    <div className="font-medium text-white mt-0.5">0xC3249…9de6 • eip155:84532</div>
                   </div>
                 </div>
               </div>
               <div className="mt-4 archive-inset p-4 flex items-center justify-between interactive-card">
                 <div className="text-xs text-muted">Not sure where to start?</div>
-                <Link href="/docs/creating-poap" className="text-sm font-semibold text-brand-red hover:underline decoration-2 underline-offset-4">Create in 3 steps →</Link>
+                <Link href="/docs/creating-poap" className="text-sm font-medium text-brand-red hover:underline decoration-2 underline-offset-4">Create in 3 steps →</Link>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Real images — competitive edge */}
+      <div className="border-y border-line bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">In the wild</div>
+              <h2 className="mt-1 font-display text-2xl sm:text-[28px] font-medium tracking-tight leading-none">Where proof hits the room</h2>
+            </div>
+            <span className="text-xs text-muted">Real events • real mints • no mock data</span>
+          </div>
+          <div className="mt-6 grid sm:grid-cols-3 gap-4">
+            <div className="archive-card overflow-hidden p-0 group">
+              <div className="aspect-[4/3] overflow-hidden relative">
+                <img src="/landing/event-1.jpg" alt="Hackathon crowd" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                  <span className="badge bg-white text-ink border-white text-[10px]">ETHGlobal • 342 mints</span>
+                  <span className="w-8 h-8 rounded-[4px] bg-brand-red text-white flex items-center justify-center text-xs font-medium">PO</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="font-medium text-sm leading-tight">Hackathons that don’t fade</div>
+                <div className="text-xs text-muted mt-1 leading-5">Onchain SVG survives after the venue wifi dies. One per wallet, soulbound if you want.</div>
+              </div>
+            </div>
+            <div className="archive-card overflow-hidden p-0 group">
+              <div className="aspect-[4/3] overflow-hidden relative">
+                <img src="/landing/event-2.png" alt="Conference" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                  <span className="badge bg-white text-ink border-white text-[10px]">Conf • Public + Allowlist</span>
+                  <span className="w-8 h-8 rounded-[4px] bg-ink text-white flex items-center justify-center text-xs font-medium">✓</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="font-medium text-sm leading-tight">Conferences, meetups, side-events</div>
+                <div className="text-xs text-muted mt-1 leading-5">Open public mint day-of, close tomorrow. Merkle for speakers, sig-QR at door.</div>
+              </div>
+            </div>
+            <div className="archive-card overflow-hidden p-0 group">
+              <div className="aspect-[4/3] overflow-hidden relative">
+                <img src="/landing/event-3.jpg" alt="Community event" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                  <span className="badge bg-white text-ink border-white text-[10px]">IRL • 37d QR</span>
+                  <span className="w-8 h-8 rounded-[4px] bg-brass text-white flex items-center justify-center text-xs font-medium">37</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="font-medium text-sm leading-tight">Live QR that actually works</div>
+                <div className="text-xs text-muted mt-1 leading-5">Per-wallet sig, not a static poster. Creator signs on tablet, attendee mints in 1.9s.</div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-2 text-xs">
+            <span className="px-2.5 py-1 rounded-[4px] bg-paper-muted border border-line">100% onchain</span>
+            <span className="px-2.5 py-1 rounded-[4px] bg-paper-muted border border-line">SSTORE2 • ~$0.05 / mint</span>
+            <span className="px-2.5 py-1 rounded-[4px] bg-paper-muted border border-line">No IPFS • No backend</span>
+            <span className="px-2.5 py-1 rounded-[4px] bg-brand-red text-white border-brand-red">Base Sepolia • 0xC3249…9de6</span>
           </div>
         </div>
       </div>
@@ -98,7 +161,7 @@ export default function Home() {
       {/* Recent */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl">Recent Archive Entries</h2>
+          <h2 className="font-display text-2xl font-medium">Recent Archive Entries</h2>
           <Link href="/gallery" className="text-sm font-medium text-brand-red hover:text-brand-red-strong transition-colors">View all →</Link>
         </div>
         {events.length===0 ? (
@@ -113,11 +176,11 @@ export default function Home() {
             {events.map((e:any)=> (
               <Link key={e.id} href={`/event/${e.id}`} className="archive-card p-4 hover:shadow-lg hover:border-brand-red/20 transition-all group interactive-card">
                 <div className="aspect-[4/3] rounded-xl bg-paper-muted border border-line overflow-hidden flex items-center justify-center p-4 relative">
-                  <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center font-bold mono-num text-sm group-hover:scale-105 transition-transform">{String(e.id).padStart(2,'0')}</div>
+                  <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num text-sm group-hover:scale-105 transition-transform">{String(e.id).padStart(2,'0')}</div>
                   <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-brand-red animate-pulse" />
                 </div>
                 <div className="mt-4">
-                  <div className="font-semibold leading-tight group-hover:text-brand-red transition-colors flex items-center gap-2">
+                  <div className="font-medium leading-tight group-hover:text-brand-red transition-colors flex items-center gap-2">
                     {e.name}
                     {e.isSoulbound && <span className="badge badge-neutral text-[10px] px-2 py-0.5">Soulbound</span>}
                   </div>
@@ -145,8 +208,8 @@ export default function Home() {
             {n:"04", t:"Signature", h:"Creator signs, 37d window", d:"Perfect for QR at live events — but each QR must be per-recipient."},
           ].map(c=> (
             <div key={c.n} className="relative interactive-card p-2 -m-2 rounded-xl">
-              <div className="text-[10px] tracking-[0.16em] uppercase font-bold text-brand-red">{c.n} — {c.t}</div>
-              <div className="mt-2 font-bold text-sm tracking-wide leading-tight">{c.h}</div>
+              <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">{c.n} — {c.t}</div>
+              <div className="mt-2 font-medium text-sm tracking-wide leading-tight">{c.h}</div>
               <div className="mt-1.5 text-sm text-muted leading-6">{c.d}</div>
             </div>
           ))}

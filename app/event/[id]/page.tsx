@@ -134,7 +134,7 @@ export default function EventPage() {
               {decoded?.image ? <img src={decoded.image} alt={event.name} className="w-full h-full object-contain" /> : <div className="w-20 h-20 rounded-2xl bg-ink text-paper flex items-center justify-center mono-num">{id}</div>}
             </div>
             <div className="p-5">
-              <h1 className="text-xl font-semibold leading-tight">{event.name}</h1>
+              <h1 className="text-xl font-medium leading-tight">{event.name}</h1>
               <p className="mt-1 text-sm text-muted">{event.description || 'No description'}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className={`badge ${event.isPublic?'badge-success':'badge-neutral'}`}>{event.isPublic?'Public':'Private'}</span>
@@ -152,7 +152,7 @@ export default function EventPage() {
           </div>
 
           <div className="archive-card p-5">
-            <h3 className="font-semibold text-sm">Onchain verification</h3>
+            <h3 className="font-medium text-sm">Onchain verification</h3>
             <div className="mt-3 space-y-2 mono-num text-xs">
               <div className="flex justify-between"><span className="text-muted">Allowlist root</span><span className="font-medium truncate max-w-[160px]">{event.allowlistRoot.slice(0,10)}…</span></div>
               <div className="flex justify-between"><span className="text-muted">Created</span><span>{new Date(Number(event.createdAt)*1000).toLocaleString()}</span></div>
@@ -172,22 +172,22 @@ export default function EventPage() {
         <div className="lg:col-span-3 space-y-4">
           {/* Eligibility card */}
           <div className="archive-card p-5 border-l-4" style={{borderLeftColor: eligibility?.already ? '#9B2C2C' : eligibility?.publicEligible || eligibility?.allowlistEligible || eligibility?.sigEligible ? '#1A7A52' : '#B7791F'}}>
-            <h2 className="font-semibold">Eligibility — Wallet {address ? `${address.slice(0,6)}…${address.slice(-4)}` : 'not connected'}</h2>
+            <h2 className="font-medium">Eligibility — Wallet {address ? `${address.slice(0,6)}…${address.slice(-4)}` : 'not connected'}</h2>
             {!isConnected ? <div className="mt-3 text-sm text-muted">Connect wallet to see which mints you can use.</div> : (
               <div className="mt-3 grid sm:grid-cols-3 gap-3">
                 <div className={`archive-inset p-3 ${eligibility?.publicEligible ? 'border-success' : 'opacity-60'}`}>
                   <div className="text-xs uppercase tracking-widest text-muted">Public</div>
-                  <div className={`text-sm font-semibold ${eligibility?.publicEligible?'text-success':'text-muted'}`}>{event.isPublic ? (eligibility?.publicEligible?'Eligible':'Blocked') : 'Disabled'}</div>
+                  <div className={`text-sm font-medium ${eligibility?.publicEligible?'text-success':'text-muted'}`}>{event.isPublic ? (eligibility?.publicEligible?'Eligible':'Blocked') : 'Disabled'}</div>
                   <div className="text-xs text-muted">{event.isPublic ? 'Calls mint()' : 'Creator disabled public'}</div>
                 </div>
                 <div className={`archive-inset p-3 ${eligibility?.allowlistEligible ? 'border-success' : 'opacity-60'}`}>
                   <div className="text-xs uppercase tracking-widest text-muted">Allowlist</div>
-                  <div className={`text-sm font-semibold ${eligibility?.allowlistEligible?'text-success':'text-muted'}`}>{event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000'?'Enabled':'No root'}</div>
+                  <div className={`text-sm font-medium ${eligibility?.allowlistEligible?'text-success':'text-muted'}`}>{event.allowlistRoot!=='0x0000000000000000000000000000000000000000000000000000000000000000'?'Enabled':'No root'}</div>
                   <div className="text-xs text-muted">Needs Merkle proof</div>
                 </div>
                 <div className={`archive-inset p-3 ${eligibility?.sigEligible ? 'border-success' : 'opacity-60'}`}>
                   <div className="text-xs uppercase tracking-widest text-muted">Signature</div>
-                  <div className={`text-sm font-semibold ${eligibility?.sigEligible?'text-success':'text-muted'}`}>{sigExpired?'Expired (37d)':'Available'}</div>
+                  <div className={`text-sm font-medium ${eligibility?.sigEligible?'text-success':'text-muted'}`}>{sigExpired?'Expired (37d)':'Available'}</div>
                   <div className="text-xs text-muted">{formatCountdown(sigSec)} left</div>
                 </div>
               </div>
@@ -197,21 +197,21 @@ export default function EventPage() {
 
           {/* Mint tabs */}
           <div className="archive-card p-5">
-            <div className="flex gap-1 p-1 rounded-full bg-paper-muted border border-line w-fit">
+            <div className="flex gap-1 p-1 rounded-[2px] bg-paper-muted border border-line w-fit">
               {(['public','allowlist','signature'] as const).map(t=> (
-                <button key={t} onClick={()=>setActiveMint(t)} className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide ${activeMint===t?'bg-ink text-paper':'text-muted hover:text-ink'}`}>{t}</button>
+                <button key={t} onClick={()=>setActiveMint(t)} className={`px-4 py-1.5 rounded-[2px] text-xs font-medium uppercase tracking-wide ${activeMint===t?'bg-ink text-paper':'text-muted hover:text-ink'}`}>{t}</button>
               ))}
             </div>
 
             {activeMint==='public' && (
               <div className="mt-5 space-y-3">
-                <h3 className="font-semibold">Public mint</h3>
+                <h3 className="font-medium">Public mint</h3>
                 <p className="text-sm text-muted">When public is enabled, anyone can mint. No allowlist or signature needed.</p>
                 <div className="archive-inset p-4">
                   <div className="text-sm font-medium">You are about to mint</div>
                   <div className="mt-2 flex gap-3 items-center">
                     {decoded?.image ? <img src={decoded.image} alt="" className="w-16 h-16 rounded-lg border border-line object-cover" /> : <div className="w-16 h-16 rounded-lg bg-ink text-paper flex items-center justify-center mono-num text-xs">#{id}</div>}
-                    <div><div className="font-semibold text-sm">{event.name}</div><div className="text-xs text-muted">#{id} • {event.location}</div></div>
+                    <div><div className="font-medium text-sm">{event.name}</div><div className="text-xs text-muted">#{id} • {event.location}</div></div>
                   </div>
                 </div>
                 <button onClick={doPublicMint} disabled={!isConnected || !event.isPublic || !!hasClaimed || isPending || isConfirming} className="ink-button w-full disabled:opacity-40">{isPending?'Check wallet…': isConfirming?'Confirming…':'Mint Publicly →'}</button>
@@ -221,14 +221,14 @@ export default function EventPage() {
 
             {activeMint==='allowlist' && (
               <div className="mt-5 space-y-3">
-                <h3 className="font-semibold">Allowlist mint</h3>
+                <h3 className="font-medium">Allowlist mint</h3>
                 <p className="text-sm text-muted">If a root is set, paste the proofs JSON from the creator OR paste the raw address list to rebuild locally.</p>
                 <div>
-                  <label className="text-xs font-semibold">Merkle proof (JSON array) or leave empty to auto-derive</label>
+                  <label className="text-xs font-medium">Merkle proof (JSON array) or leave empty to auto-derive</label>
                   <textarea value={proofInput} onChange={e=>setProofInput(e.target.value)} rows={3} placeholder='["0xabc...","0xdef..."]' className="mt-1 w-full rounded-xl border border-line bg-paper-elevated px-3 py-2 mono-num text-xs" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold">Or raw address list (for local rebuild)</label>
+                  <label className="text-xs font-medium">Or raw address list (for local rebuild)</label>
                   <textarea value={rawList} onChange={e=>setRawList(e.target.value)} rows={3} placeholder="0x1234...&#10;0xabcd..." className="mt-1 w-full rounded-xl border border-line bg-paper-elevated px-3 py-2 mono-num text-xs" />
                   {merkleFromList && <div className="text-xs text-muted mt-1 mono-num">Tree root: {merkleFromList.root.slice(0,10)}… matches onchain? {merkleFromList.root.toLowerCase()===event.allowlistRoot.toLowerCase()?'✓ yes':'≠ no'}</div>}
                 </div>
@@ -238,14 +238,14 @@ export default function EventPage() {
 
             {activeMint==='signature' && (
               <div className="mt-5 space-y-3">
-                <h3 className="font-semibold">Signature mint</h3>
+                <h3 className="font-medium">Signature mint</h3>
                 <p className="text-sm text-muted">Valid for 37 days after registration. Creator signs <span className="mono-num">keccak256(eventId, chainId, recipient)</span> offchain; you submit the signature. Each signature is bound to one recipient — a static QR cannot work for everyone. Use the creator's per-recipient links.</p>
                 <div className="archive-inset p-3 text-xs leading-6">
                   <div><strong>Message:</strong> <span className="mono-num">keccak256(abi.encodePacked({id}, 84532, yourAddress))</span> → <span className="mono-num">toEthSignedMessageHash</span> → sign</div>
                   <div className="text-muted">Distribute via signed links or QR sheet (creator console).</div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold">Signature (0x…)</label>
+                  <label className="text-xs font-medium">Signature (0x…)</label>
                   <input value={sigInput} onChange={e=>setSigInput(e.target.value)} placeholder="0x..." className="mt-1 w-full rounded-xl border border-line bg-paper-elevated px-3 py-2 mono-num text-xs" />
                 </div>
                 {sigExpired && <div className="text-xs text-danger">Signature window expired ({formatCountdown(sigSec)}).</div>}
@@ -263,12 +263,12 @@ export default function EventPage() {
 
           {/* Creator console */}
           <div className="archive-card p-5">
-            <h3 className="font-semibold">Creator Console {isCreator ? <span className="badge badge-success text-xs ml-2">You are creator</span> : <span className="badge badge-neutral text-xs ml-2">Creator only</span>}</h3>
+            <h3 className="font-medium">Creator Console {isCreator ? <span className="badge badge-success text-xs ml-2">You are creator</span> : <span className="badge badge-neutral text-xs ml-2">Creator only</span>}</h3>
             {!isCreator ? <div className="mt-3 text-sm text-muted">Connect as <span className="mono-num">{event.creator.slice(0,6)}…</span> to manage this POAP.</div> : (
               <div className="mt-4 space-y-6">
                 {/* Allowlist */}
                 <div className="archive-inset p-4">
-                  <div className="font-semibold text-sm">Allowlist — set root once ({creatorExpired ? 'expired' : formatCountdown(creatorSec)+' left'})</div>
+                  <div className="font-medium text-sm">Allowlist — set root once ({creatorExpired ? 'expired' : formatCountdown(creatorSec)+' left'})</div>
                   <textarea value={rawList} onChange={e=>setRawList(e.target.value)} rows={4} placeholder="Paste addresses, one per line or comma separated" className="mt-3 w-full rounded-xl border border-line bg-paper-elevated px-3 py-2 mono-num text-xs" />
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button onClick={()=>{
@@ -288,7 +288,7 @@ export default function EventPage() {
 
                 {/* Public toggle */}
                 <div className="archive-inset p-4">
-                  <div className="font-semibold text-sm">Public mint toggle</div>
+                  <div className="font-medium text-sm">Public mint toggle</div>
                   <div className="mt-2 flex items-center gap-3">
                     <span className={`badge ${event.isPublic?'badge-success':'badge-neutral'}`}>{event.isPublic?'Public Open':'Public Closed'}</span>
                     <span className="text-xs text-muted">{creatorExpired ? 'Window closed' : `${formatCountdown(creatorSec)} left to toggle`}</span>
@@ -301,14 +301,14 @@ export default function EventPage() {
 
                 {/* Creator mint */}
                 <div className="archive-inset p-4">
-                  <div className="font-semibold text-sm">Creator batch mint (≤101)</div>
+                  <div className="font-medium text-sm">Creator batch mint (≤101)</div>
                   <textarea value={creatorRecipients} onChange={e=>setCreatorRecipients(e.target.value)} rows={3} placeholder="0xabc..., 0xdef..." className="mt-2 w-full rounded-xl border border-line bg-paper-elevated px-3 py-2 mono-num text-xs" />
                   <button onClick={doCreatorMint} disabled={creatorExpired || isPending} className="mt-3 ink-button text-sm w-full disabled:opacity-40">Batch Mint →</button>
                 </div>
 
                 {/* Sig studio help */}
                 <div className="archive-inset p-4">
-                  <div className="font-semibold text-sm">Signature Studio — QR for live events</div>
+                  <div className="font-medium text-sm">Signature Studio — QR for live events</div>
                   <div className="text-xs text-muted mt-1">How it works: creator signs per-recipient message offchain (no gas), shares link/QR, recipient calls <span className="mono-num">mintWithSignature</span> within 37d. A static poster QR cannot hold a signature — generate one QR per attendee, or use a claim page that asks for wallet then signs live.</div>
                   <button onClick={doCreateSignature} className="mt-3 brass-button text-xs w-full">Sign for Recipient + QR →</button>
                 </div>

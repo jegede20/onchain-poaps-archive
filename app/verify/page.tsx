@@ -59,7 +59,7 @@ export default function VerifyPage() {
             { !/^0x[a-fA-F0-9]{40}$/.test(wallet) ? <div className="text-sm text-warn">Enter a valid address to verify.</div> :
               hasClaimed ? (
                 <div>
-                  <div className="flex items-center gap-2 text-success font-semibold"><span className="w-6 h-6 rounded-full bg-success text-white flex items-center justify-center text-xs">✓</span> Holds this POAP — 1 per wallet verified onchain</div>
+                  <div className="flex items-center gap-2 text-success font-medium"><span className="w-6 h-6 rounded-full bg-success text-white flex items-center justify-center text-xs">✓</span> Holds this POAP — 1 per wallet verified onchain</div>
                   <div className="mt-3 mono-num text-xs leading-6 break-all">
                     <div>Token ID: {idNum} • Contract {POAP_ADDRESS.slice(0,10)}…</div>
                     <div>Holder: {wallet.slice(0,8)}…{wallet.slice(-6)}</div>
@@ -72,7 +72,7 @@ export default function VerifyPage() {
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center gap-2 text-muted font-semibold"><span className="w-6 h-6 rounded-full bg-paper-muted border border-line flex items-center justify-center text-xs">✕</span> Does not hold this POAP</div>
+                  <div className="flex items-center gap-2 text-muted font-medium"><span className="w-6 h-6 rounded-full bg-paper-muted border border-line flex items-center justify-center text-xs">✕</span> Does not hold this POAP</div>
                   <div className="mt-2 text-xs text-muted">Checked hasClaimed({idNum}, {wallet.slice(0,6)}…) → false on Base Sepolia. Try another wallet or POAP.</div>
                 </div>
               )

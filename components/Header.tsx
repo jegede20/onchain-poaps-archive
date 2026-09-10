@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 export function Header() {
   const pathname = usePathname();
-  const linkClass = (p: string) => `text-sm font-medium transition-colors ${pathname===p ? 'text-ink font-semibold underline decoration-brand-red decoration-2 underline-offset-8' : 'text-muted hover:text-ink'}`;
+  const linkClass = (p: string) => `text-sm font-medium transition-colors ${pathname===p ? 'text-ink font-medium underline decoration-brand-red decoration-2 underline-offset-8' : 'text-muted hover:text-ink'}`;
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-paper/90 border-b border-line">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -16,14 +16,14 @@ export function Header() {
                 <circle cx="20" cy="20" r="18" fill="none" stroke="#9B2C2C" strokeWidth="1.2" strokeDasharray="2 3"/>
               </svg>
               <div className="w-7 h-7 rounded-full wax-seal flex items-center justify-center">
-                <span className="text-white font-bold text-[10px] tracking-widest">PO</span>
+                <span className="text-white font-medium text-[10px] tracking-widest">PO</span>
               </div>
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-brass rounded-full border-2 border-white flex items-center justify-center">
                 <span className="text-[6px]">✦</span>
               </div>
             </div>
             <div className="leading-tight">
-              <div className="font-semibold text-sm tracking-tight flex items-center gap-1.5">Onchain POAPs <span className="text-brand-red text-xs">●</span></div>
+              <div className="font-medium text-sm tracking-tight flex items-center gap-1.5">Onchain POAPs <span className="text-brand-red text-xs">●</span></div>
               <div className="text-xs text-muted -mt-0.5 mono-num">Archive • Base Sepolia</div>
             </div>
           </Link>
@@ -63,7 +63,7 @@ export function Header() {
                     }
                     return (
                       <div className="flex items-center gap-2">
-                        <button onClick={openChainModal} type="button" className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-white border border-line text-xs font-medium hover:border-brand-red/30 transition-colors">
+                        <button onClick={openChainModal} type="button" className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-[2px] bg-white border border-line text-xs font-medium hover:border-brand-red/30 transition-colors">
                           {chain.hasIcon && <div style={{background: chain.iconBackground, width: 16, height: 16, borderRadius: 999, overflow:'hidden'}}>{chain.iconUrl && <img alt={chain.name ?? 'Chain'} src={chain.iconUrl} style={{width:16, height:16}}/>}</div>}
                           {chain.name}
                         </button>
@@ -83,7 +83,7 @@ export function Header() {
       </div>
       <div className="hidden lg:block border-t border-line/60 bg-paper-elevated/60">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-9 flex items-center gap-6 text-xs">
-          <span className="text-muted uppercase tracking-widest font-semibold">Quick →</span>
+          <span className="text-muted uppercase tracking-widest font-medium">Quick →</span>
           <Link href="/explore" className="hover:text-brand-red">Explore all</Link>
           <Link href="/verify" className="hover:text-brand-red">Verify attendance</Link>
           <Link href="/docs" className="hover:text-brand-red">How it works</Link>

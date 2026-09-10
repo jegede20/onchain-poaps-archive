@@ -54,20 +54,20 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
 
       <div className="space-y-4">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted">Shape</div>
+          <div className="text-xs font-medium uppercase tracking-widest text-muted">Shape</div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {SHAPES.map(s=> (
-              <button key={s.id} onClick={()=>setShape(s.id)} className={`p-3 rounded-xl border text-sm font-medium ${shape===s.id ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line hover:border-brass'}`}>
-                <div className="font-semibold">{s.label}</div><div className="text-xs opacity-70">{s.desc}</div>
+              <button key={s.id} onClick={()=>setShape(s.id)} className={`p-3 rounded-[2px] border text-sm font-medium ${shape===s.id ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line hover:border-brass'}`}>
+                <div className="font-medium">{s.label}</div><div className="text-xs opacity-70">{s.desc}</div>
               </button>
             ))}
           </div>
         </div>
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted">Palette</div>
+          <div className="text-xs font-medium uppercase tracking-widest text-muted">Palette</div>
           <div className="mt-2 flex gap-2">
             {PALETTES.map(p=> (
-              <button key={p.id} onClick={()=>setPalette(p.id)} className={`flex-1 h-10 rounded-full border-2 ${palette===p.id?'border-brand-red':'border-line'}`} style={{background: p.bg}} title={p.label}>
+              <button key={p.id} onClick={()=>setPalette(p.id)} className={`flex-1 h-10 rounded-[2px] border-2 ${palette===p.id?'border-brand-red':'border-line'}`} style={{background: p.bg}} title={p.label}>
                 <span className="w-6 h-6 rounded-full mx-auto block mt-1.5" style={{background:p.accent}} />
               </button>
             ))}
@@ -75,21 +75,21 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
           <div className="text-xs text-muted mt-1">{pal.label}</div>
         </div>
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted">Center</div>
+          <div className="text-xs font-medium uppercase tracking-widest text-muted">Center</div>
           <div className="mt-2 flex gap-1.5 flex-wrap">
             {EMOJIS.map(e=> (
-              <button key={e} onClick={()=>{setCenter(e); setUseEmoji(true);}} className={`w-9 h-9 rounded-xl border flex items-center justify-center text-lg ${center===e && useEmoji ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line hover:border-brass'}`}>{e}</button>
+              <button key={e} onClick={()=>{setCenter(e); setUseEmoji(true);}} className={`w-9 h-9 rounded-[2px] border flex items-center justify-center text-lg ${center===e && useEmoji ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line hover:border-brass'}`}>{e}</button>
             ))}
           </div>
           <label className="mt-3 flex items-center gap-2 text-xs"><input type="checkbox" checked={useEmoji} onChange={e=>setUseEmoji(e.target.checked)} /> Use emoji/initials as center</label>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold">Top text ({topText.length}/22)</label>
+            <label className="text-xs font-medium">Top text ({topText.length}/22)</label>
             <input value={topText} onChange={e=>setTopText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-xl border border-line px-3 py-2 text-sm" placeholder="ONCHAIN POAP" />
           </div>
           <div>
-            <label className="text-xs font-semibold">Bottom text ({bottomText.length}/22)</label>
+            <label className="text-xs font-medium">Bottom text ({bottomText.length}/22)</label>
             <input value={bottomText} onChange={e=>setBottomText(e.target.value.slice(0,22))} className="mt-1 w-full rounded-xl border border-line px-3 py-2 text-sm" placeholder="BASE SEP" />
           </div>
         </div>

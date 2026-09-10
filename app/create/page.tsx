@@ -66,7 +66,7 @@ export default function CreatePage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
         <div className="archive-card p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-success text-white flex items-center justify-center mx-auto">✓</div>
-          <h2 className="mt-4 text-2xl font-semibold">POAP Registered</h2>
+          <h2 className="mt-4 text-2xl font-medium">POAP Registered</h2>
           <p className="mt-2 text-muted">Transaction confirmed on Base Sepolia.</p>
           <a href={`https://sepolia.basescan.org/tx/${hash}`} target="_blank" className="mt-4 inline-block underline">View on BaseScan →</a>
           <div className="mt-6 flex justify-center gap-3">
@@ -87,14 +87,14 @@ export default function CreatePage() {
         <span className="hero-pill-dot" />
         Create • SSTORE2 • Base Sepolia
       </div>
-      <h1 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">Register a new <em>Onchain POAP</em></h1>
+      <h1 className="mt-4 font-display text-3xl sm:text-4xl font-medium tracking-tight leading-tight">Register a new <em>Onchain POAP</em></h1>
       <p className="mt-2 text-sm sm:text-[15px] text-muted leading-6">All metadata and SVG live 100% onchain via SSTORE2. Optimize your SVG to save gas.</p>
 
       {/* Steps */}
       <div className="mt-8 flex items-center gap-2">
         {[1,2,3].map(n=> (
           <div key={n} className={`flex items-center gap-2 ${step>=n ? '' : 'opacity-40'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border ${step===n ? 'bg-ink text-paper border-ink' : step>n ? 'bg-brass border-brass' : 'bg-paper border-line'}`}>{n}</div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border ${step===n ? 'bg-ink text-paper border-ink' : step>n ? 'bg-brass border-brass' : 'bg-paper border-line'}`}>{n}</div>
             <div className="hidden sm:block text-sm font-medium">{n===1?'Artwork & Name': n===2?'Distribution':'Details & Review'}</div>
             {n<3 && <div className="w-10 h-px bg-line mx-2 hidden sm:block" />}
           </div>
@@ -105,16 +105,16 @@ export default function CreatePage() {
         <div className="lg:col-span-3 archive-card p-6">
           {step===1 && (
             <div className="space-y-5">
-              <h2 className="font-semibold">1 — Artwork & Name</h2>
+              <h2 className="font-medium">1 — Artwork & Name</h2>
               <div>
                 <label className="text-sm font-medium">POAP name * <span className="text-muted font-normal">(1-128)</span></label>
                 <input value={name} onChange={e=>setName(e.target.value)} placeholder="ETHGlobal Paris 2026" className="mt-1 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/20" />
                 <div className="text-xs text-muted mt-1">{name.length}/128</div>
               </div>
               <div>
-                <div className="flex gap-2 p-1 rounded-full bg-paper-muted border border-line w-fit">
-                  <button onClick={()=>setArtMode('studio')} className={`px-4 py-1.5 rounded-full text-xs font-semibold ${artMode==='studio'?'bg-brand-red text-white':'text-muted'}`}>🎨 Stamp Studio</button>
-                  <button onClick={()=>setArtMode('paste')} className={`px-4 py-1.5 rounded-full text-xs font-semibold ${artMode==='paste'?'bg-brand-red text-white':'text-muted'}`}>Upload / paste SVG</button>
+                <div className="flex gap-2 p-1 rounded-[2px] bg-paper-muted border border-line w-fit">
+                  <button onClick={()=>setArtMode('studio')} className={`px-4 py-1.5 rounded-[2px] text-xs font-medium ${artMode==='studio'?'bg-brand-red text-white':'text-muted'}`}>🎨 Stamp Studio</button>
+                  <button onClick={()=>setArtMode('paste')} className={`px-4 py-1.5 rounded-[2px] text-xs font-medium ${artMode==='paste'?'bg-brand-red text-white':'text-muted'}`}>Upload / paste SVG</button>
                 </div>
                 {artMode==='studio' ? (
                   <div className="mt-4">
@@ -141,7 +141,7 @@ export default function CreatePage() {
           )}
           {step===2 && (
             <div className="space-y-5">
-              <h2 className="font-semibold">2 — Distribution</h2>
+              <h2 className="font-medium">2 — Distribution</h2>
               <div className="grid gap-4">
                 <label className="archive-inset p-4 flex items-start gap-3 cursor-pointer hover:border-brass/50">
                   <input type="checkbox" checked={isPublic} onChange={e=>setIsPublic(e.target.checked)} className="mt-1" />
@@ -171,7 +171,7 @@ export default function CreatePage() {
           )}
           {step===3 && (
             <div className="space-y-5">
-              <h2 className="font-semibold">3 — Details & Review</h2>
+              <h2 className="font-medium">3 — Details & Review</h2>
               <div>
                 <label className="text-sm font-medium">Description <span className="text-muted">(≤512)</span></label>
                 <textarea value={description} onChange={e=>setDescription(e.target.value)} rows={3} placeholder="Proof of attendance for..." className="mt-1 w-full rounded-xl border border-line bg-paper-elevated px-4 py-3 text-sm" />
@@ -193,7 +193,7 @@ export default function CreatePage() {
               </div>
 
               <div className="archive-inset p-4 text-sm">
-                <div className="font-semibold">Review</div>
+                <div className="font-medium">Review</div>
                 <div className="mt-2 mono-num text-xs leading-6">
                   <div>Name: {name || '—'}</div>
                   <div>Flags: {getFlags(isPublic,isSoulbound)} ({isPublic?'public':'private'} + {isSoulbound?'soulbound':'transferable'})</div>
@@ -226,7 +226,7 @@ export default function CreatePage() {
             <div className="mt-2 text-xs text-muted">Before mint, attendees see this exact artwork + metadata. After mint, links to BaseScan & OpenSea.</div>
           </div>
           <div className="archive-inset p-4">
-            <div className="text-sm font-semibold">Creator permissions (30d)</div>
+            <div className="text-sm font-medium">Creator permissions (30d)</div>
             <ul className="mt-2 text-xs text-muted leading-6 list-disc pl-4">
               <li>Toggle public mint</li>
               <li>Set allowlist root once</li>

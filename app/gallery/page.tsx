@@ -39,9 +39,9 @@ export default function GalleryPage() {
           <h1 className="mt-4 font-display text-3xl sm:text-4xl leading-none tracking-tight">Gallery</h1>
           <p className="mt-2 text-sm sm:text-[15px] text-muted leading-6">Every POAP is fully onchain — SVG + metadata via SSTORE2. <span className="text-ink font-medium">Like a real collection.</span></p>
         </div>
-        <div className="flex items-center gap-1.5 p-1 rounded-full bg-paper-muted border border-line shrink-0">
-          <button onClick={()=>setTab('all')} className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${tab==='all' ? 'bg-brand-red text-white shadow-sm' : 'text-muted hover:text-ink'}`}>All ({items.length})</button>
-          <button onClick={()=>setTab('owned')} className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${tab==='owned' ? 'bg-brand-red text-white shadow-sm' : 'text-muted hover:text-ink'}`}>Owned {address ? `(${items.filter(i=>i.owned).length})` : ''}</button>
+        <div className="flex items-center gap-1.5 p-1 rounded-[2px] bg-paper-muted border border-line shrink-0">
+          <button onClick={()=>setTab('all')} className={`px-4 py-1.5 rounded-[2px] text-sm font-medium transition-all ${tab==='all' ? 'bg-brand-red text-white shadow-sm' : 'text-muted hover:text-ink'}`}>All ({items.length})</button>
+          <button onClick={()=>setTab('owned')} className={`px-4 py-1.5 rounded-[2px] text-sm font-medium transition-all ${tab==='owned' ? 'bg-brand-red text-white shadow-sm' : 'text-muted hover:text-ink'}`}>Owned {address ? `(${items.filter(i=>i.owned).length})` : ''}</button>
         </div>
       </div>
 
@@ -54,13 +54,13 @@ export default function GalleryPage() {
               {item.image ? (
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
+                <div className="w-16 h-16 rounded-2xl bg-ink text-paper flex items-center justify-center font-medium mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
               )}
               {item.owned && <div className="absolute top-3 left-3 badge badge-success text-xs shadow-sm">Owned</div>}
               {item.isSoulbound && <div className="absolute top-3 right-3 badge badge-neutral text-[10px]">Soulbound</div>}
             </div>
             <div className="p-4">
-              <div className="font-semibold line-clamp-1 group-hover:text-brand-red transition-colors">{item.name}</div>
+              <div className="font-medium line-clamp-1 group-hover:text-brand-red transition-colors">{item.name}</div>
               <div className="text-xs text-muted line-clamp-2 mt-1">{item.description || 'No description'}</div>
               <div className="mt-3 flex items-center gap-2">
                 <span className={`badge text-[10px] ${item.isPublic ? 'badge-success' : 'badge-neutral'}`}>{item.isPublic?'Public':'Private'}</span>

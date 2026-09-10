@@ -36,7 +36,7 @@ export default function KioskPage() {
       <div className="h-14 border-b border-line bg-white flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Link href={`/event/${id}`} className="ghost-button text-xs py-1.5">← Exit kiosk</Link>
-          <div className="font-semibold text-sm">{name} • Kiosk</div>
+          <div className="font-medium text-sm">{name} • Kiosk</div>
           <span className="badge badge-brass text-[11px]">Fullscreen door screen</span>
         </div>
         <div className="text-xs mono-num text-muted">{count} signed • {address ? `${address.slice(0,6)}…` : 'not connected'}</div>
@@ -44,7 +44,7 @@ export default function KioskPage() {
 
       <div className="flex-1 grid lg:grid-cols-2 gap-0">
         <div className="p-6 sm:p-10 flex flex-col">
-          <h2 className="text-2xl font-semibold tracking-tight">At the door</h2>
+          <h2 className="text-2xl font-medium tracking-tight">At the door</h2>
           <p className="mt-2 text-muted text-sm">Works offline once loaded. Grab attendee address, sign client-side, show QR — ~2s per person.</p>
 
           <div className="mt-8 space-y-4">
@@ -55,7 +55,7 @@ export default function KioskPage() {
             <button onClick={doSign} className="ink-button w-full text-base py-4">Sign & show QR →</button>
             {sig && (
               <div className="archive-inset p-4 mono-num text-xs break-all">
-                <div className="font-semibold text-ink">Signature</div>
+                <div className="font-medium text-ink">Signature</div>
                 <div className="mt-1 text-muted">{sig.slice(0,60)}…</div>
                 <div className="mt-2 text-muted">Link: {`${typeof window!=='undefined'?window.location.origin:''}/event/${id}?sig=…&recipient=${recipient.slice(0,6)}…`}</div>
               </div>
@@ -78,7 +78,7 @@ export default function KioskPage() {
               <img src={qr} alt="QR" className="w-72 h-72 bg-white p-3 rounded-2xl mx-auto shadow-xl" />
               <div className="mt-4 text-white font-medium">{name}</div>
               <div className="mono-num text-xs text-white/60">#{String(id).padStart(4,'0')} • {recipient.slice(0,6)}…{recipient.slice(-4)}</div>
-              <button onClick={()=>{setQr(null); setRecipient('');}} className="mt-6 bg-white text-ink rounded-full px-6 py-2 font-semibold text-sm">Next attendee →</button>
+              <button onClick={()=>{setQr(null); setRecipient('');}} className="mt-6 bg-white text-ink rounded-[4px] px-6 py-2 font-medium text-sm">Next attendee →</button>
             </div>
           )}
         </div>
