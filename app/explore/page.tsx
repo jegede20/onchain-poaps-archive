@@ -29,7 +29,7 @@ export default function ExplorePage() {
     if (filter==='all') return items;
     if (filter==='public') return items.filter(i=>i.isPublic);
     if (filter==='allowlist') return items.filter(i=>i.hasAllowlist);
-    if (filter==='signature') return items.filter(i=> !i.isPublic && !i.hasAllowlist); // heuristic: private without allowlist likely sig
+    if (filter==='signature') return items.filter(i=> !i.isPublic && !i.hasAllowlist);
     if (filter==='mintable') return items.filter(i=>i.isPublic || i.hasAllowlist);
     return items;
   }, [items, filter]);
@@ -43,18 +43,22 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="min-w-0 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Explore POAPs</h1>
-          <p className="mt-1 text-muted">Every POAP registered, newest first — what you see is what calldata holds.</p>
+        <div className="min-w-0">
+          <div className="hero-pill">
+            <span className="hero-pill-dot" />
+            Explore • {totalNum} registered
+          </div>
+          <h1 className="mt-4 font-display text-3xl sm:text-4xl leading-none tracking-tight">Explore POAPs</h1>
+          <p className="mt-2 text-sm sm:text-[15px] text-muted leading-6">Newest first — what you see is what calldata holds.</p>
         </div>
-        <Link href="/create" className="ink-button text-sm">Create a POAP →</Link>
+        <Link href="/create" className="ink-button text-sm shrink-0">Create a POAP →</Link>
       </div>
 
       <div className="mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {tabs.map(t=> (
-          <button key={t.id} onClick={()=>setFilter(t.id)} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap border ${filter===t.id ? 'bg-brand-red text-white border-brand-red' : 'bg-white border-line text-muted hover:border-brass'}`}>{t.label}</button>
+          <button key={t.id} onClick={()=>setFilter(t.id)} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap border transition-all ${filter===t.id ? 'bg-brand-red text-white border-brand-red shadow-sm' : 'bg-white border-line text-muted hover:border-brand-red/30 hover:text-ink'}`}>{t.label}</button>
         ))}
       </div>
 
@@ -64,9 +68,9 @@ export default function ExplorePage() {
         <>
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((it:any)=> (
-              <Link key={it.id} href={`/event/${it.id}`} className="archive-card overflow-hidden group hover:shadow-lg hover:border-brand-red/30 transition-all">
+              <Link key={it.id} href={`/event/${it.id}`} className="archive-card overflow-hidden group interactive-card">
                 <div className="relative bg-paper-muted aspect-[4/3] flex items-center justify-center overflow-hidden">
-                  {it.image ? <img src={it.image} alt={it.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" /> : <div className="w-20 h-20 rounded-2xl bg-white border border-line flex items-center justify-center font-bold mono-num shadow-sm">{String(it.id).padStart(2,'0')}</div>}
+                  {it.image ? <img src={it.image} alt={it.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" /> : <div className="w-20 h-20 rounded-2xl bg-white border border-line flex items-center justify-center font-bold mono-num shadow-sm">{String(it.id).padStart(2,'0')}</div>}
                   <div className="absolute top-3 left-3 flex gap-1.5">
                     <span className="badge badge-brass text-[10px]">#{String(it.id).padStart(4,'0')}</span>
                     {it.isPublic ? <span className="badge badge-success text-[10px]">Public</span> : it.hasAllowlist ? <span className="badge badge-info text-[10px]">Allowlist</span> : <span className="badge badge-warn text-[10px]">QR claim</span>}
@@ -74,7 +78,7 @@ export default function ExplorePage() {
                   {it.isSoulbound && <div className="absolute top-3 right-3 badge badge-neutral text-[10px]">Soulbound</div>}
                 </div>
                 <div className="p-4">
-                  <div className="font-semibold leading-tight line-clamp-1">{it.name}</div>
+                  <div className="font-semibold leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{it.name}</div>
                   <div className="text-xs text-muted line-clamp-2 mt-1">{it.description || 'No description'}</div>
                   <div className="mt-3 flex items-center gap-2 text-xs text-muted mono-num">
                     <span>{it.location || 'Onchain'}</span><span>•</span><span>{it.creator.slice(0,6)}…{it.creator.slice(-4)}</span>
@@ -83,7 +87,7 @@ export default function ExplorePage() {
               </Link>
             ))}
           </div>
-          {show < totalNum && <button onClick={()=>setShow(s=>s+24)} className="mt-8 mx-auto block ghost-button">Load more</button>}
+          {show < totalNum && <button onClick={()=>setShow(s=>s+24)} className="mt-8 mx-auto block ghost-button hover:border-brand-red">Load more</button>}
         </>
       )}
     </div>

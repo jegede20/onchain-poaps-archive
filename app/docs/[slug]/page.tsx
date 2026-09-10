@@ -70,7 +70,7 @@ Steps:
 
 Archive Signature Studio does in-browser signing, shows countdown, exports JSON/CSV + per-recipient QR.
 
-Reverts: POAP__InvalidValue(\"signer\") if wrong signer, AlreadyClaimed if dup, TimeLockExpired if >37d.
+Reverts: POAP__InvalidValue("signer") if wrong signer, AlreadyClaimed if dup, TimeLockExpired if >37d.
 `},
   "qr-distribution": { title: "QR-Code Distribution", body: `
 For live events: DO NOT put a static QR with a pre-signed signature — recipient is inside the hash, so one signature works for only one wallet.
@@ -113,15 +113,20 @@ Creator can verify attendees via NewMint events.
 export default async function DocPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const doc = CONTENT[slug];
-  if (!doc) return <div className="max-w-3xl mx-auto px-4 py-16">Not found. <a href="/docs" className="underline">Docs</a></div>;
+  if (!doc) return <div className="min-w-0 max-w-3xl mx-auto w-full px-4 py-16">Not found. <a href="/docs" className="underline text-brand-red">Docs</a></div>;
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <a href="/docs" className="text-sm text-muted hover:text-ink">← Docs</a>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">{doc.title}</h1>
-      <div className="mt-2 text-xs mono-num text-muted uppercase tracking-widest">{slug}</div>
-      <div className="mt-8 archive-card p-6 sm:p-8">
-        <pre className="whitespace-pre-wrap text-sm leading-7 text-ink font-sans">{doc.body.trim()}</pre>
-        <div className="mt-8 archive-inset p-4 text-xs text-muted">Source: OnchainPOAPs contract (Poap.sol) + README + BaseScan. Contract is source of truth for types, reverts, and windows.</div>
+    <div className="min-w-0 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10">
+      <a href="/docs" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-red transition-colors">← Docs</a>
+      <div className="mt-4">
+        <div className="hero-pill text-[10px] px-3 py-1">
+          <span className="hero-pill-dot" />
+          {slug}
+        </div>
+        <h1 className="mt-4 font-display text-3xl sm:text-4xl leading-tight tracking-tight">{doc.title}</h1>
+      </div>
+      <div className="mt-6 sm:mt-8 archive-card p-5 sm:p-8 overflow-hidden">
+        <pre className="whitespace-pre-wrap break-words text-[14px] leading-7 text-ink font-sans">{doc.body.trim()}</pre>
+        <div className="mt-8 archive-inset p-4 text-xs text-muted leading-6">Source: OnchainPOAPs contract (Poap.sol) + README + BaseScan. Contract is source of truth for types, reverts, and windows.</div>
       </div>
     </div>
   );

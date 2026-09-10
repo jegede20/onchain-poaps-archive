@@ -9,13 +9,11 @@ export default function GalleryPage() {
   const [tab, setTab] = useState<'all'|'owned'>('all');
   const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
   const totalNum = total ? Number(total) : 0;
-  const ids = Array.from({length: Math.min(totalNum, 50)}, (_,i)=> i).reverse(); // show latest
-  // We need to fetch events + uri decoding for artwork
+  const ids = Array.from({length: Math.min(totalNum, 50)}, (_,i)=> i).reverse();
   const eventContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const uriContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'uri' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts: eventContracts, query: { enabled: ids.length>0 } as any });
   const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0 } as any });
-  // owned check
   const balanceContracts = address ? ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'balanceOf' as const, args: [address, BigInt(id)] as const })) : [];
   const { data: balances } = useReadContracts({ contracts: balanceContracts, query: { enabled: !!address && ids.length>0 } as any });
 
@@ -31,15 +29,19 @@ export default function GalleryPage() {
   const filtered = tab==='owned' ? items.filter(i=>i.owned) : items;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="min-w-0 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Gallery</h1>
-          <p className="mt-1 text-muted">Every POAP is fully onchain — SVG + metadata via SSTORE2.</p>
+        <div className="min-w-0">
+          <div className="hero-pill">
+            <span className="hero-pill-dot" />
+            Collection • {items.length} onchain
+          </div>
+          <h1 className="mt-4 font-display text-3xl sm:text-4xl leading-none tracking-tight">Gallery</h1>
+          <p className="mt-2 text-sm sm:text-[15px] text-muted leading-6">Every POAP is fully onchain — SVG + metadata via SSTORE2. <span className="text-ink font-medium">Like a real collection.</span></p>
         </div>
-        <div className="flex items-center gap-2 p-1 rounded-full bg-paper-muted border border-line">
-          <button onClick={()=>setTab('all')} className={`px-4 py-1.5 rounded-full text-sm font-medium ${tab==='all' ? 'bg-ink text-paper' : 'text-muted'}`}>All ({items.length})</button>
-          <button onClick={()=>setTab('owned')} className={`px-4 py-1.5 rounded-full text-sm font-medium ${tab==='owned' ? 'bg-ink text-paper' : 'text-muted'}`}>Owned {address ? `(${items.filter(i=>i.owned).length})` : ''}</button>
+        <div className="flex items-center gap-1.5 p-1 rounded-full bg-paper-muted border border-line shrink-0">
+          <button onClick={()=>setTab('all')} className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${tab==='all' ? 'bg-brand-red text-white shadow-sm' : 'text-muted hover:text-ink'}`}>All ({items.length})</button>
+          <button onClick={()=>setTab('owned')} className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${tab==='owned' ? 'bg-brand-red text-white shadow-sm' : 'text-muted hover:text-ink'}`}>Owned {address ? `(${items.filter(i=>i.owned).length})` : ''}</button>
         </div>
       </div>
 
@@ -47,18 +49,18 @@ export default function GalleryPage() {
 
       <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {filtered.map(item=> (
-          <Link key={item.id} href={`/event/${item.id}`} className="archive-card overflow-hidden hover:shadow-lg transition-shadow group">
+          <Link key={item.id} href={`/event/${item.id}`} className="archive-card overflow-hidden group interactive-card">
             <div className="aspect-[4/3] bg-paper-muted border-b border-line overflow-hidden flex items-center justify-center p-0 relative">
               {item.image ? (
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold mono-num">{String(item.id).padStart(2,'0')}</div>
+                <div className="w-16 h-16 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
               )}
-              {item.owned && <div className="absolute top-3 left-3 badge badge-success text-xs">Owned</div>}
+              {item.owned && <div className="absolute top-3 left-3 badge badge-success text-xs shadow-sm">Owned</div>}
               {item.isSoulbound && <div className="absolute top-3 right-3 badge badge-neutral text-[10px]">Soulbound</div>}
             </div>
             <div className="p-4">
-              <div className="font-semibold line-clamp-1 group-hover:text-ink">{item.name}</div>
+              <div className="font-semibold line-clamp-1 group-hover:text-brand-red transition-colors">{item.name}</div>
               <div className="text-xs text-muted line-clamp-2 mt-1">{item.description || 'No description'}</div>
               <div className="mt-3 flex items-center gap-2">
                 <span className={`badge text-[10px] ${item.isPublic ? 'badge-success' : 'badge-neutral'}`}>{item.isPublic?'Public':'Private'}</span>

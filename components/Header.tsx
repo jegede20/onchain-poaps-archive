@@ -11,7 +11,6 @@ export function Header() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3">
-            {/* Fixed logo — perforated stamp + wax seal */}
             <div className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-brand-red/20 shadow-sm flex items-center justify-center bg-white">
               <svg viewBox="0 0 40 40" className="absolute inset-0 w-full h-full opacity-10">
                 <circle cx="20" cy="20" r="18" fill="none" stroke="#9B2C2C" strokeWidth="1.2" strokeDasharray="2 3"/>
@@ -39,14 +38,53 @@ export function Header() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/create" className="hidden sm:inline-flex brass-button text-sm">New POAP</Link>
-          <ConnectButton chainStatus="icon" showBalance={false} accountStatus={{ smallScreen:'avatar', largeScreen:'full' }} />
+          <ConnectButton.Custom>
+            {({ account, chain, openAccountModal, openConnectModal, openChainModal, mounted }) => {
+              const ready = mounted;
+              const connected = ready && account && chain;
+              return (
+                <div
+                  {...(!ready && { 'aria-hidden': true, style: { opacity: 0, pointerEvents: 'none', userSelect: 'none' } })}
+                >
+                  {(() => {
+                    if (!connected) {
+                      return (
+                        <button onClick={openConnectModal} type="button" className="custom-connect">
+                          Connect Wallet
+                        </button>
+                      );
+                    }
+                    if (chain.unsupported) {
+                      return (
+                        <button onClick={openChainModal} type="button" className="custom-connect" style={{background:'#9B2C2C'}}>
+                          Wrong network
+                        </button>
+                      );
+                    }
+                    return (
+                      <div className="flex items-center gap-2">
+                        <button onClick={openChainModal} type="button" className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-white border border-line text-xs font-medium hover:border-brand-red/30 transition-colors">
+                          {chain.hasIcon && <div style={{background: chain.iconBackground, width: 16, height: 16, borderRadius: 999, overflow:'hidden'}}>{chain.iconUrl && <img alt={chain.name ?? 'Chain'} src={chain.iconUrl} style={{width:16, height:16}}/>}</div>}
+                          {chain.name}
+                        </button>
+                        <button onClick={openAccountModal} type="button" className="custom-connect">
+                          <span className="hidden sm:inline">{account.displayName}</span>
+                          <span className="sm:hidden">{account.displayName?.slice(0,6)}</span>
+                          <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">●</span>
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+            }}
+          </ConnectButton.Custom>
         </div>
       </div>
-      {/* Desktop secondary nav hidden on mobile — we use bottom tab bar */}
       <div className="hidden lg:block border-t border-line/60 bg-paper-elevated/60">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-9 flex items-center gap-6 text-xs">
           <span className="text-muted uppercase tracking-widest font-semibold">Quick →</span>
-          <Link href="/explore" className="hover:text-brand-red">Explore all 51</Link>
+          <Link href="/explore" className="hover:text-brand-red">Explore all</Link>
           <Link href="/verify" className="hover:text-brand-red">Verify attendance</Link>
           <Link href="/docs" className="hover:text-brand-red">How it works</Link>
           <span className="ml-auto mono-num text-muted">100% onchain • no IPFS • 0xC3243…9de6</span>
