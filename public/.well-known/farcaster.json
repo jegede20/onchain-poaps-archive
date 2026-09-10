@@ -1,0 +1,30 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Onchain POAPs — Archive",
+    "subtitle": "Fully onchain attendance proofs",
+    "description": "Create, distribute, mint and collect onchain POAPs on Base Sepolia — public, allowlist, or signature.",
+    "iconUrl": "https://onchain-poaps-archive.vercel.app/icon.png",
+    "splashImageUrl": "https://onchain-poaps-archive.vercel.app/icon.png",
+    "splashBackgroundColor": "#FDFCF8",
+    "homeUrl": "https://onchain-poaps-archive.vercel.app",
+    "imageUrl": "https://onchain-poaps-archive.vercel.app/og.png",
+    "buttonTitle": "Open Archive",
+    "webhookUrl": "https://onchain-poaps-archive.vercel.app/api/webhook"
+  },
+  "frame": {
+    "version": "next",
+    "name": "Onchain POAPs — Archive",
+    "iconUrl": "https://onchain-poaps-archive.vercel.app/icon.png",
+    "homeUrl": "https://onchain-poaps-archive.vercel.app",
+    "imageUrl": "https://onchain-poaps-archive.vercel.app/og.png",
+    "buttonTitle": "Open Archive",
+    "splashImageUrl": "https://onchain-poaps-archive.vercel.app/icon.png",
+    "splashBackgroundColor": "#FDFCF8"
+  }
+}
