@@ -6,7 +6,38 @@ import { optimizeSvg, estimateGas, formatGasCost } from '@/lib/svg-optimizer';
 import { StampStudio } from '@/components/StampStudio';
 import Link from 'next/link';
 
-const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="24" fill="#FFFBF0"/><circle cx="100" cy="78" r="46" fill="#9B2C2C"/><circle cx="100" cy="78" r="38" fill="none" stroke="white" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8"/><text x="100" y="146" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2E1A0F">ARCHIVE 01</text></svg>`;
+const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <rect width="200" height="200" rx="22" fill="#FFFBF0"/>
+  
+  <defs>
+    <path id="topArc" d="M 42 78 A 64 64 0 0 1 158 78"/>
+    <path id="bannerPath" d="M 58 121.5 H 142"/>
+    <filter id="goldShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <path d="M 100.0 10.0 Q 109.4 5.0 117.6 11.7 Q 127.7 8.6 134.4 16.9 Q 145.0 15.8 150.0 25.2 Q 160.6 26.2 163.6 36.4 Q 173.8 39.4 174.8 50.0 Q 184.2 55.0 183.1 65.6 Q 191.4 72.3 188.3 82.4 Q 195.0 90.6 190.0 100.0 Q 195.0 109.4 188.3 117.6 Q 191.4 127.7 183.1 134.4 Q 184.2 145.0 174.8 150.0 Q 173.8 160.6 163.6 163.6 Q 160.6 173.8 150.0 174.8 Q 145.0 184.2 134.4 183.1 Q 127.7 191.4 117.6 188.3 Q 109.4 195.0 100.0 190.0 Q 90.6 195.0 82.4 188.3 Q 72.3 191.4 65.6 183.1 Q 55.0 184.2 50.0 174.8 Q 39.4 173.8 36.4 163.6 Q 26.2 160.6 25.2 150.0 Q 15.8 145.0 16.9 134.4 Q 8.6 127.7 11.7 117.6 Q 5.0 109.4 10.0 100.0 Q 5.0 90.6 11.7 82.4 Q 8.6 72.3 16.9 65.6 Q 15.8 55.0 25.2 50.0 Q 26.2 39.4 36.4 36.4 Q 39.4 26.2 50.0 25.2 Q 55.0 15.8 65.6 16.9 Q 72.3 8.6 82.4 11.7 Q 90.6 5.0 100.0 10.0 Z" fill="#C8AD73" stroke="#A88A4A" stroke-width="0.75"/>
+  <circle cx="100" cy="100" r="75.5" fill="#0F2B26" stroke="#C8AD73" stroke-width="1.55"/>
+  <circle cx="100" cy="100" r="73.2" fill="none" stroke="#EADDC0" stroke-width="0.55" opacity="0.40"/>
+  <circle cx="100" cy="100" r="57.2" fill="none" stroke="#C8AD73" stroke-width="0.55" stroke-dasharray="1.9 4" opacity="0.52"/>
+  <circle cx="100" cy="100" r="52.5" fill="none" stroke="#EADDC0" stroke-width="0.45" stroke-dasharray="0.9 5.5" opacity="0.24"/>
+  <text fill="#EADDC0" font-family="Cormorant Garamond, Georgia, serif" font-size="13.2" font-weight="700" letter-spacing="2.1" text-anchor="middle">
+    <textPath href="#topArc" startOffset="50%" dominant-baseline="middle">MY EVENT 2026</textPath>
+  </text>
+  <g transform="translate(100 56)"><path d="M0 -2.6 L0.9 -0.9 L2.6 0 L0.9 0.9 L0 2.6 L-0.9 0.9 L-2.6 0 L-0.9 -0.9 Z" fill="#EADDC0"/></g>
+  <g transform="translate(76 68)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(124 68)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(86 73)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(114 73)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(72 96)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(128 96)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(83 108)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g><g transform="translate(117 108)"><path d="M0 -3 L0.95 -0.95 L3 0 L0.95 0.95 L0 3 L-0.95 0.95 L-3 0 L-0.95 -0.95 Z" fill="#EADDC0" opacity="1"/><circle cx="0" cy="0" r="0.45" fill="#A88A4A" opacity="0.95"/></g>
+  <g transform="translate(68 88) rotate(-16) scale(1.15)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55" stroke-linejoin="round"/><path d="M0 0 L 6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(67.5 95) rotate(-13) scale(1.0899999999999999)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55" stroke-linejoin="round"/><path d="M0 0 L 6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(67 103) rotate(-10) scale(1.0299999999999998)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55" stroke-linejoin="round"/><path d="M0 0 L 6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(66.5 111) rotate(-7) scale(0.97)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55" stroke-linejoin="round"/><path d="M0 0 L 6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(66 118) rotate(-4) scale(0.9099999999999999)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55" stroke-linejoin="round"/><path d="M0 0 L 6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g>
+  <g transform="translate(132 88) rotate(16) scale(1.15)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55"/><path d="M0 0 L -6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(132.5 95) rotate(13) scale(1.0899999999999999)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55"/><path d="M0 0 L -6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(133 103) rotate(10) scale(1.0299999999999998)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55"/><path d="M0 0 L -6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(133.5 111) rotate(7) scale(0.97)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55"/><path d="M0 0 L -6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g><g transform="translate(134 118) rotate(4) scale(0.9099999999999999)"><path d="M0 -7.5 C 3.6 -3.2 3.6 3.2 0 7.5 C -3.6 3.2 -3.6 -3.2 0 -7.5 Z M0 -7.5 C 1.4 -3 1.4 3 0 7.5" fill="#EADDC0" stroke="#A88A4A" stroke-width="0.55"/><path d="M0 0 L -6.5 1.1" stroke="#A88A4A" stroke-width="0.45" opacity="0.95"/></g>
+  <text x="100" y="98.5" text-anchor="middle" dominant-baseline="middle" font-size="36" style="filter: drop-shadow(0 1.2px 0 rgba(0,0,0,0.5))">🏆</text>
+  <g filter="url(#goldShadow)">
+    <rect x="44" y="118.5" width="112" height="15.2" rx="1.6" fill="none" stroke="#C8AD73" stroke-width="1.15"/>
+    <rect x="44" y="118.5" width="112" height="15.2" rx="1.6" fill="#0F2B26" />
+    <rect x="45.2" y="119.7" width="109.6" height="12.8" rx="1" fill="none" stroke="#EADDC0" stroke-width="0.4" opacity="0.55"/>
+  </g>
+  <text x="100" y="128.8" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="7.2" font-weight="700" letter-spacing="1.45" fill="#EADDC0">ONCHAIN • POAP • BASE</text>
+  <text x="100" y="142.8" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui" font-size="6.4" font-weight="600" letter-spacing="2.2" fill="#EADDC0" opacity="0.92">PARTICIPANT</text>
+  <g transform="translate(100 149)"><path d="M0 -2.4 L0.8 -0.8 L2.4 0 L0.8 0.8 L0 2.4 L-0.8 0.8 L-2.4 0 L-0.8 -0.8 Z" fill="#EADDC0"/><circle cx="0" cy="0" r="0.4" fill="#0F2B26"/></g>
+</svg>`;
 
 export default function CreatePage() {
   const { isConnected } = useAccount();
@@ -256,13 +287,21 @@ export default function CreatePage() {
         </div>
 
         <div className="lg:col-span-2 space-y-4 lg:sticky lg:top-20">
-          <div className="archive-card p-4">
-            <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Preview</div>
-            <div className="mt-3 aspect-square rounded-[2px] border border-line bg-paper-muted flex items-center justify-center overflow-hidden p-6">
-              <div dangerouslySetInnerHTML={{ __html: svgToUse }} style={{ width: '100%', height: '100%' }} />
+          <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
+            <div className="px-4 pt-4 flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Preview</div>
+              <span className="text-xs mono-num text-muted">{new Blob([svgToUse]).size.toLocaleString()} bytes</span>
             </div>
-            <div className="mt-3 text-xs text-muted mono-num">Flags: {getFlags(isPublic,isSoulbound)} • {isSoulbound ? 'Soulbound' : 'Transferable'} • {isPublic ? 'Public' : 'Private'}</div>
-            <div className="mt-2 text-xs text-muted leading-5">Before mint, attendees see this exact artwork + metadata. After mint, links to BaseScan & OpenSea.</div>
+            <div className="mt-3 h-[270px] sm:h-[290px] flex items-center justify-center p-3 relative overflow-hidden border-t border-line" style={{background:'#FFFBF0'}}>
+              <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
+              <div className="w-full max-w-[240px] sm:max-w-[250px] aspect-square flex items-center justify-center relative">
+                <div dangerouslySetInnerHTML={{ __html: svgToUse }} className="w-full h-full" />
+              </div>
+            </div>
+            <div className="p-4 border-t border-line bg-white">
+              <div className="text-xs text-muted mono-num">Flags: {getFlags(isPublic,isSoulbound)} • {isSoulbound ? 'Soulbound' : 'Transferable'} • {isPublic ? 'Public' : 'Private'}</div>
+              <div className="mt-2 text-xs text-muted leading-5">Before mint, attendees see this exact artwork + metadata. After mint, links to BaseScan & OpenSea.</div>
+            </div>
           </div>
           <div className="archive-inset p-4">
             <div className="text-sm font-medium">Creator permissions (30d)</div>
