@@ -120,7 +120,7 @@ export default function Home() {
             </div>
             <div className="archive-card overflow-hidden p-0 group">
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img src="/landing/event-2.png" alt="Distribution" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <img src="/landing/event-2.jpg" alt="Distribution" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                   <span className="badge bg-white text-ink border-white text-[10px]">Distribute • 3 ways</span>
