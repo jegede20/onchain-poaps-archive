@@ -38,9 +38,13 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
     const goldDeep = '#A88A4A';
     const paper = bg;
 
+    // topArc: scallop+classic = well inside gold circle, gear = up to circle edge (not outside)
+    const topArcD = shape === 'gear'
+      ? 'M 42 78 A 64 64 0 0 1 158 78'   // gear: higher, reaches close to gold ring
+      : 'M 54 88.5 A 50 50 0 0 1 146 88.5'; // scallop/classic: deeper inside
     const defs = `
   <defs>
-    <path id="topArc" d="M 48 84.5 A 58 58 0 0 1 152 84.5"/>
+    <path id="topArc" d="${topArcD}"/>
     <path id="bannerPath" d="M 58 121.5 H 142"/>
     <filter id="goldShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="1.2" stdDeviation="1.3" flood-color="#000" flood-opacity="0.35"/>
