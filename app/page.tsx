@@ -22,27 +22,25 @@ export default function Home() {
   const { totalNum, events } = useEvents(9);
   return (
     <div className="flex-1">
-      {/* Hero - Archive lobby - screenshot inspired */}
-      <div className="border-b border-line bg-gradient-to-b from-white via-paper to-paper relative overflow-hidden">
-        {/* subtle paper texture */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{backgroundImage:`repeating-linear-gradient(0deg, transparent, transparent 24px, #9B2C2C 24px, #9B2C2C 25px)`}} />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 relative">
+      {/* Hero - Archive lobby - not too tall, heading wide + distinct background */}
+      <div className="border-b border-line bg-paper relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative">
           <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-start">
             <div className="flex-1 min-w-0">
-              {/* Pill — same color as create button, small, aligned with heading */}
-              <div className="hero-pill">
-                <span className="hero-pill-dot" />
-                Live on Base Sepolia • {totalNum} events archived
+              <div className="rounded-[2px] border border-line bg-[#FFFBF0] p-6 sm:p-7 relative overflow-hidden" style={{backgroundColor:'#FFFBF0', backgroundImage:`repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(155,44,44,0.07) 26px, rgba(155,44,44,0.07) 27px)`}}>
+                <div className="hero-pill">
+                  <span className="hero-pill-dot" />
+                  Live on Base Sepolia • {totalNum} events archived
+                </div>
+                <h1 className="hero-title mt-5 max-w-none w-full">
+                  Permanent proof<br />
+                  <em>of attendance,</em><br />
+                  built around the chain.
+                </h1>
+                <p className="mt-5 max-w-[560px] text-[15px] leading-7 text-muted-2 font-light">
+                  Create an event, store its SVG and metadata entirely onchain via SSTORE2, choose how attendance is distributed, and let attendees mint. <span className="text-ink font-medium">No IPFS. No server.</span>
+                </p>
               </div>
-              {/* Heading — Instrument Serif like screenshot */}
-              <h1 className="hero-title mt-6">
-                Permanent proof<br />
-                <em>of attendance,</em><br />
-                built around the chain.
-              </h1>
-              <p className="mt-6 max-w-[560px] text-[15px] leading-7 text-muted-2 font-light">
-                Create an event, store its SVG and metadata entirely onchain via SSTORE2, choose how attendance is distributed, and let attendees mint. <span className="text-ink font-medium">No IPFS. No server.</span>
-              </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/create" className="ink-button text-[15px] px-7 py-3">Create POAP →</Link>
                 <Link href="/gallery" className="ghost-button text-[15px] px-6">Open Gallery</Link>
@@ -67,7 +65,7 @@ export default function Home() {
               </div>
             </div>
             <div className="w-full lg:w-[420px] shrink-0">
-              <div className="rounded-2xl p-6 text-white relative overflow-hidden shimmer" style={{background:'#2E1A0F', border:'1px solid #2E1A0F'}}>
+              <div className="rounded-[2px] p-6 text-white relative overflow-hidden shimmer" style={{background:'#2E1A0F', border:'1px solid #2E1A0F'}}>
                 <div className="absolute inset-0 opacity-[0.07]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize:'20px 20px'}} />
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/20 rounded-full blur-2xl" />
                 <div className="relative">
@@ -108,44 +106,44 @@ export default function Home() {
           <div className="mt-6 grid sm:grid-cols-3 gap-4">
             <div className="archive-card overflow-hidden p-0 group">
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img src="/landing/event-1.jpg" alt="Hackathon crowd" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <img src="/landing/event-1.jpg" alt="POAP creation" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                  <span className="badge bg-white text-ink border-white text-[10px]">ETHGlobal • 342 mints</span>
-                  <span className="w-8 h-8 rounded-[4px] bg-brand-red text-white flex items-center justify-center text-xs font-medium">PO</span>
+                  <span className="badge bg-white text-ink border-white text-[10px]">Create • SSTORE2</span>
+                  <span className="w-8 h-8 rounded-[2px] bg-brand-red text-white flex items-center justify-center text-xs font-medium">01</span>
                 </div>
               </div>
               <div className="p-4">
-                <div className="font-medium text-sm leading-tight">Hackathons that don’t fade</div>
-                <div className="text-xs text-muted mt-1 leading-5">Onchain SVG survives after the venue wifi dies. One per wallet, soulbound if you want.</div>
+                <div className="font-medium text-sm leading-tight">Create — fully onchain</div>
+                <div className="text-xs text-muted mt-1 leading-5">Name, SVG, soulbound, public, allowlist root — stored as calldata, not IPFS.</div>
               </div>
             </div>
             <div className="archive-card overflow-hidden p-0 group">
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img src="/landing/event-2.png" alt="Conference" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <img src="/landing/event-2.png" alt="Distribution" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                  <span className="badge bg-white text-ink border-white text-[10px]">Conf • Public + Allowlist</span>
-                  <span className="w-8 h-8 rounded-[4px] bg-ink text-white flex items-center justify-center text-xs font-medium">✓</span>
+                  <span className="badge bg-white text-ink border-white text-[10px]">Distribute • 3 ways</span>
+                  <span className="w-8 h-8 rounded-[2px] bg-ink text-white flex items-center justify-center text-xs font-medium">02</span>
                 </div>
               </div>
               <div className="p-4">
-                <div className="font-medium text-sm leading-tight">Conferences, meetups, side-events</div>
-                <div className="text-xs text-muted mt-1 leading-5">Open public mint day-of, close tomorrow. Merkle for speakers, sig-QR at door.</div>
+                <div className="font-medium text-sm leading-tight">Distribute — Public / Allowlist / Sig</div>
+                <div className="text-xs text-muted mt-1 leading-5">Open public 30d, set Merkle root once, or sign per-wallet QR (37d).</div>
               </div>
             </div>
             <div className="archive-card overflow-hidden p-0 group">
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img src="/landing/event-3.jpg" alt="Community event" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                <img src="/landing/event-3.jpg" alt="Collect" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                  <span className="badge bg-white text-ink border-white text-[10px]">IRL • 37d QR</span>
-                  <span className="w-8 h-8 rounded-[4px] bg-brass text-white flex items-center justify-center text-xs font-medium">37</span>
+                  <span className="badge bg-white text-ink border-white text-[10px]">Collect • Gallery</span>
+                  <span className="w-8 h-8 rounded-[2px] bg-brass text-white flex items-center justify-center text-xs font-medium">03</span>
                 </div>
               </div>
               <div className="p-4">
-                <div className="font-medium text-sm leading-tight">Live QR that actually works</div>
-                <div className="text-xs text-muted mt-1 leading-5">Per-wallet sig, not a static poster. Creator signs on tablet, attendee mints in 1.9s.</div>
+                <div className="font-medium text-sm leading-tight">Collect — Gallery + Verify</div>
+                <div className="text-xs text-muted mt-1 leading-5">View owned, see SVG + metadata, verify hasClaimed & open on BaseScan.</div>
               </div>
             </div>
           </div>

@@ -56,16 +56,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Display serif — for hero like screenshot: Post on rhythm. */
+/* Display serif — for hero like screenshot: Post on rhythm. — WIDE */
 .font-display {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-weight: 400;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.005em;
 }
 .font-display-italic {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-style: italic;
   font-weight: 400;
+  letter-spacing: 0.005em;
 }
 
 /* Archive utilities — light white brown + red */
@@ -154,12 +155,12 @@ body {
   50% { opacity: 0.7; transform: scale(1.15); }
 }
 
-/* Hero heading — screenshot inspired — BIG but reduced bold */
+/* Hero heading — screenshot inspired — BIG but reduced bold — WIDE */
 .hero-title {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-size: clamp(2.8rem, 9vw, 4.6rem);
-  line-height: 0.9;
-  letter-spacing: -0.035em;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
   font-weight: 500;
   color: var(--ink);
 }
@@ -168,7 +169,7 @@ body {
   font-style: italic;
   font-weight: 400;
   color: var(--brand-red);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.005em;
 }
 .hero-sub {
   font-family: var(--font-instrument-serif), Georgia, serif;
