@@ -83,8 +83,12 @@ export default function CreatePage() {
       <div className="flex items-center gap-3 text-sm text-muted">
         <Link href="/" className="hover:text-ink">Archive</Link><span>/</span><span className="text-ink font-medium">Create POAP</span>
       </div>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">Register a new Onchain POAP</h1>
-      <p className="mt-2 text-muted">All metadata and SVG live 100% onchain via SSTORE2. Optimize your SVG to save gas.</p>
+      <div className="hero-pill mt-4">
+        <span className="hero-pill-dot" />
+        Create • SSTORE2 • Base Sepolia
+      </div>
+      <h1 className="mt-4 font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">Register a new <em>Onchain POAP</em></h1>
+      <p className="mt-2 text-sm sm:text-[15px] text-muted leading-6">All metadata and SVG live 100% onchain via SSTORE2. Optimize your SVG to save gas.</p>
 
       {/* Steps */}
       <div className="mt-8 flex items-center gap-2">

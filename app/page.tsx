@@ -50,24 +50,24 @@ export default function Home() {
               </div>
               <div className="mt-10 grid grid-cols-3 gap-3 max-w-[520px]">
                 <div className="archive-card p-4 interactive-card group">
-                  <div className="text-[10px] uppercase tracking-[0.14em] font-semibold text-brand-red">Public</div>
-                  <div className="mt-1 font-semibold text-sm">Pause / Resume</div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-bold text-brand-red">Public</div>
+                  <div className="mt-1 font-bold text-sm tracking-wide">Pause / Resume</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">30d creator window</div>
                 </div>
                 <div className="archive-card p-4 interactive-card group">
-                  <div className="text-[10px] uppercase tracking-[0.14em] font-semibold text-brand-red">Allowlist</div>
-                  <div className="mt-1 font-semibold text-sm">Merkle</div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-bold text-brand-red">Allowlist</div>
+                  <div className="mt-1 font-bold text-sm tracking-wide">Merkle</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">One-time root</div>
                 </div>
                 <div className="archive-card p-4 interactive-card group">
-                  <div className="text-[10px] uppercase tracking-[0.14em] font-semibold text-brand-red">Signature</div>
-                  <div className="mt-1 font-semibold text-sm">37d</div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-bold text-brand-red">Signature</div>
+                  <div className="mt-1 font-bold text-sm tracking-wide">37d</div>
                   <div className="text-xs text-muted group-hover:text-muted-2 transition-colors">QR for events</div>
                 </div>
               </div>
             </div>
             <div className="w-full lg:w-[420px] shrink-0">
-              <div className="archive-card p-6 bg-ink text-paper border-ink relative overflow-hidden shimmer">
+              <div className="rounded-2xl p-6 text-white relative overflow-hidden shimmer" style={{background:'#2E1A0F', border:'1px solid #2E1A0F'}}>
                 <div className="absolute inset-0 opacity-[0.07]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize:'20px 20px'}} />
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-red/20 rounded-full blur-2xl" />
                 <div className="relative">
@@ -145,8 +145,8 @@ export default function Home() {
             {n:"04", t:"Signature", h:"Creator signs, 37d window", d:"Perfect for QR at live events — but each QR must be per-recipient."},
           ].map(c=> (
             <div key={c.n} className="relative interactive-card p-2 -m-2 rounded-xl">
-              <div className="text-[10px] tracking-[0.14em] uppercase font-semibold text-brand-red">{c.n} — {c.t}</div>
-              <div className="mt-2 font-semibold text-sm leading-tight">{c.h}</div>
+              <div className="text-[10px] tracking-[0.16em] uppercase font-bold text-brand-red">{c.n} — {c.t}</div>
+              <div className="mt-2 font-bold text-sm tracking-wide leading-tight">{c.h}</div>
               <div className="mt-1.5 text-sm text-muted leading-6">{c.d}</div>
             </div>
           ))}

@@ -92,33 +92,36 @@ body {
 .ink-button {
   background: var(--brand-red);
   color: white;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 10px 18px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   transition: all 0.15s;
   box-shadow: 0 2px 8px rgba(155,44,44,0.25);
+  letter-spacing: 0.01em;
 }
 .ink-button:hover { background: var(--brand-red-strong); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(155,44,44,0.3);}
 .ink-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 .brass-button {
   background: var(--brass);
   color: white;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 10px 18px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   box-shadow: 0 2px 8px rgba(196,106,61,0.25);
+  letter-spacing: 0.01em;
 }
 .brass-button:hover { background: var(--brass-strong); }
 .ghost-button {
   background: white;
   border: 1px solid var(--line-strong);
   color: var(--ink);
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 9px 16px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
+  letter-spacing: 0.01em;
 }
 .ghost-button:hover { background: var(--paper-muted); border-color: var(--brass); }
 
@@ -151,13 +154,13 @@ body {
   50% { opacity: 0.7; transform: scale(1.15); }
 }
 
-/* Hero heading — screenshot inspired */
+/* Hero heading — screenshot inspired — BIG & BOLD */
 .hero-title {
   font-family: var(--font-instrument-serif), Georgia, serif;
-  font-size: clamp(2.2rem, 6vw, 3.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-  font-weight: 400;
+  font-size: clamp(2.8rem, 9vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-weight: 600;
   color: var(--ink);
 }
 .hero-title em {
@@ -165,6 +168,7 @@ body {
   font-style: italic;
   font-weight: 400;
   color: var(--brand-red);
+  letter-spacing: -0.03em;
 }
 .hero-sub {
   font-family: var(--font-instrument-serif), Georgia, serif;
@@ -178,8 +182,8 @@ body {
 .rk-connect-override {
   background: var(--brand-red) !important;
   color: white !important;
-  border-radius: 999px !important;
-  font-weight: 600 !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
   box-shadow: 0 2px 8px rgba(155,44,44,0.25) !important;
   border: none !important;
 }
@@ -191,15 +195,16 @@ body {
 .custom-connect {
   background: var(--brand-red);
   color: white;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 9px 16px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   box-shadow: 0 2px 8px rgba(155,44,44,0.25);
   transition: all 0.15s;
+  letter-spacing: 0.01em;
 }
 .custom-connect:hover { background: var(--brand-red-strong); transform: translateY(-1px); }
 .custom-connect:active { transform: translateY(0); }
