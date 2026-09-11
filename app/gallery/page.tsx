@@ -2,55 +2,26 @@
 import { useAccount, useReadContracts, useReadContract } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS, decodeUri } from '@/lib/poap';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function GalleryPage() {
   const { address } = useAccount();
   const [tab, setTab] = useState<'all'|'owned'>('all');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<'recent'|'name'|'oldest'>('recent');
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 3000 } as any });
+  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 4000 } as any });
   const totalNum = total ? Number(total) : 0;
-  const ids = Array.from({length: Math.min(totalNum, 24)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
+  const ids = Array.from({length: Math.min(totalNum, 12)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const eventContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
-  const { data: eventsData } = useReadContracts({ contracts: eventContracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
-  const [uriMap, setUriMap] = useState<Record<number,string>>({});
-  // direct fetch uri to avoid multicall 24*15KB = 360KB revert
-  useEffect(()=>{
-    if(ids.length===0) return;
-    let cancelled=false;
-    const sel="0x0e89341c";
-    const pad=(n:number)=> n.toString(16).padStart(64,'0');
-    const fetchOne=async(id:number)=>{
-      const data=sel+pad(id);
-      try{
-        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]})});
-        const j=await res.json();
-        const hex=j.result as string;
-        if(!hex||hex==="0x") return;
-        const lenHex=hex.slice(2+64,2+128);
-        const len=parseInt(lenHex,16);
-        const dataHex=hex.slice(2+128,2+128+len*2);
-        const bytes=Uint8Array.from(dataHex.match(/.{1,2}/g)!.map(b=>parseInt(b,16)));
-        const str=new TextDecoder().decode(bytes);
-        if(!cancelled) setUriMap(m=>({...m,[id]:str}));
-      }catch{}
-    };
-    (async()=>{
-      for(let i=0;i<ids.length;i+=4){
-        await Promise.all(ids.slice(i,i+4).map(fetchOne));
-        await new Promise(r=>setTimeout(r,120));
-      }
-    })();
-    const iv=setInterval(()=>{ ids.slice(0,8).forEach(fetchOne); },7000);
-    return ()=>{cancelled=true; clearInterval(iv);};
-  },[ids.join(",")]);
+  const uriContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'uri' as const, args: [BigInt(id)] as const }));
+  const { data: eventsData } = useReadContracts({ contracts: eventContracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
+  const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
   const balanceContracts = address ? ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'balanceOf' as const, args: [address, BigInt(id)] as const })) : [];
   const { data: balances } = useReadContracts({ contracts: balanceContracts, query: { enabled: !!address && ids.length>0, refetchInterval: 4000 } as any });
 
   const items = ids.map((id, idx) => {
     const evt = (eventsData as any)?.[idx]?.result;
-    const uri = uriMap[id] as string | undefined;
+    const uri = (uriData as any)?.[idx]?.result as string | undefined;
     const decoded = uri ? decodeUri(uri) : null;
     const bal = address ? Number((balances as any)?.[idx]?.result || 0) : 0;
     if (!evt) return null;
