@@ -9,15 +9,15 @@ export default function GalleryPage() {
   const [tab, setTab] = useState<'all'|'owned'>('all');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<'recent'|'name'|'oldest'>('recent');
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
+  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 4000 } as any });
   const totalNum = total ? Number(total) : 0;
-  const ids = Array.from({length: Math.min(totalNum, 50)}, (_,i)=> i).reverse();
+  const ids = Array.from({length: Math.min(totalNum, 50)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const eventContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const uriContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'uri' as const, args: [BigInt(id)] as const }));
-  const { data: eventsData } = useReadContracts({ contracts: eventContracts, query: { enabled: ids.length>0 } as any });
-  const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0 } as any });
+  const { data: eventsData } = useReadContracts({ contracts: eventContracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
+  const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
   const balanceContracts = address ? ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'balanceOf' as const, args: [address, BigInt(id)] as const })) : [];
-  const { data: balances } = useReadContracts({ contracts: balanceContracts, query: { enabled: !!address && ids.length>0 } as any });
+  const { data: balances } = useReadContracts({ contracts: balanceContracts, query: { enabled: !!address && ids.length>0, refetchInterval: 4000 } as any });
 
   const items = ids.map((id, idx) => {
     const evt = (eventsData as any)?.[idx]?.result;

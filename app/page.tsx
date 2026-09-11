@@ -1,18 +1,23 @@
 "use client";
 import Link from 'next/link';
 import { useReadContract, useReadContracts } from 'wagmi';
-import { POAP_ABI, POAP_ADDRESS } from '@/lib/poap';
+import { POAP_ABI, POAP_ADDRESS, decodeUri } from '@/lib/poap';
 
 function useEvents(limit=12) {
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
+  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 4000 } as any });
   const totalNum = total ? Number(total) : 0;
   const ids = Array.from({length: Math.min(totalNum, limit)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
-  const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0 } as any });
+  const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
+  const uriContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'uri' as const, args: [BigInt(id)] as const }));
+  const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
   const events = ids.map((id, idx) => {
     const r = (eventsData as any)?.[idx]?.result;
     if (!r) return null;
-    return { id, name: r[0], description: r[1], eventDate: r[2], location: r[3], allowlistRoot: r[4], svgImage: r[5], creator: r[6], createdAt: r[7], externalUrl: r[8], isSoulbound: r[9], isPublic: r[10] };
+    const uri = (uriData as any)?.[idx]?.result as string | undefined;
+    const decoded = uri ? decodeUri(uri) : null;
+    const image = decoded?.image || null;
+    return { id, name: r[0], description: r[1], eventDate: r[2], location: r[3], allowlistRoot: r[4], svgImage: r[5], creator: r[6], createdAt: r[7], externalUrl: r[8], isSoulbound: r[9], isPublic: r[10], decoded, image };
   }).filter(Boolean) as any[];
   return { totalNum, events, ids };
 }
@@ -86,9 +91,14 @@ export default function Home() {
                 </div>
                 <div className="h-[240px] flex items-center justify-center p-4 relative" style={{background:'#FFFBF0'}}>
                   <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
-                  {latest?.svgImage ? (
+                  {latest?.image ? (
                     <div className="w-[200px] h-[200px] relative flex items-center justify-center">
-                      <div dangerouslySetInnerHTML={{__html:latest.svgImage}} className="w-full h-full" />
+                      <img src={latest.image} alt={latest.name} className="w-full h-full object-contain" />
+                    </div>
+                  ) : latest ? (
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center mx-auto animate-pulse">{String(latest.id).padStart(2,'0')}</div>
+                      <div className="mt-2 text-xs text-muted">Loading art…</div>
                     </div>
                   ) : (
                     <div className="text-center">
@@ -277,8 +287,8 @@ export default function Home() {
             {events.map((e:any)=> (
               <Link key={e.id} href={`/event/${e.id}`} className="archive-card p-4 hover:shadow-lg hover:border-brand-red/20 transition-all group interactive-card">
                 <div className="aspect-[4/3] rounded-xl bg-paper-muted border border-line overflow-hidden flex items-center justify-center p-4 relative">
-                  {e.svgImage ? (
-                    <div className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain" dangerouslySetInnerHTML={{__html: e.svgImage}} />
+                  {e.image ? (
+                    <img src={e.image} alt={e.name} className="w-full h-full object-contain p-2" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num text-sm group-hover:scale-105 transition-transform">{String(e.id).padStart(2,'0')}</div>
                   )}
@@ -325,8 +335,8 @@ export default function Home() {
               {marqueeEvents.map((e:any, idx:number)=> (
                 <Link key={`${e.id}-${idx}`} href={`/event/${e.id}`} className="shrink-0 w-[160px] rounded-[2px] border-2 border-line bg-white overflow-hidden hover:border-ink hover:shadow-sm transition-all group">
                   <div className="h-[140px] flex items-center justify-center p-3 relative" style={{background:'#FFFBF0'}}>
-                    {e.svgImage ? (
-                      <div className="w-[120px] h-[120px] flex items-center justify-center [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{__html:e.svgImage}} />
+                    {e.image ? (
+                      <img src={e.image} alt={e.name} className="w-[120px] h-[120px] object-contain" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-ink text-white flex items-center justify-center mono-num text-xs">{String(e.id).padStart(2,'0')}</div>
                     )}
