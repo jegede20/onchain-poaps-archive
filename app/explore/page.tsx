@@ -35,13 +35,9 @@ export default function ExplorePage() {
         }
       }catch{}
     };
-    (async()=>{
-      for(let i=0;i<ids.length;i+=4){
-        await Promise.all(ids.slice(i,i+4).map(fetchOne));
-        await new Promise(r=>setTimeout(r,90));
-      }
-    })();
-    const iv=setInterval(()=> ids.slice(0,12).forEach(fetchOne), 7000);
+    // instant parallel — no artificial stagger, so All shows in <600ms
+    Promise.all(ids.map(fetchOne));
+    const iv=setInterval(()=> ids.forEach(fetchOne), 7000);
     return ()=>{cancelled=true; clearInterval(iv);};
   },[ids.join(",")]);
   const [uriMap, setUriMap] = useState<Record<number,string>>({});
@@ -80,13 +76,8 @@ export default function ExplorePage() {
         if(!cancelled) setUriMap(m=>({...m,[id]:str}));
       }catch{}
     };
-    (async()=>{
-      for(let i=0;i<ids.length;i+=4){
-        await Promise.all(ids.slice(i,i+4).map(fetchOne));
-        await new Promise(r=>setTimeout(r,120));
-      }
-    })();
-    const iv=setInterval(()=>{ ids.slice(0,12).forEach(fetchOne); },7000);
+    Promise.all(ids.map(fetchOne));
+    const iv=setInterval(()=>{ ids.forEach(fetchOne); },7000);
     return ()=>{cancelled=true; clearInterval(iv);};
   },[ids.join(",")]);
 
@@ -140,17 +131,27 @@ export default function ExplorePage() {
       </div>
 
       {filtered.length===0 ? (
-        <div className="mt-8 archive-card p-12 text-center text-muted">
-          {items.length===0 ? (
-            <div>
-              <div className="w-10 h-10 mx-auto rounded-full border-2 border-dashed border-line flex items-center justify-center animate-pulse text-muted">◌</div>
-              <div className="mt-3 text-sm">Loading onchain POAPs… {totalNum ? `${totalNum+1} registered` : ''}</div>
-              <div className="text-xs mt-1">Newest mints appear at the top within seconds — no refresh needed.</div>
-            </div>
-          ) : (
-            <div>No POAPs for this filter. Try All or Create one.</div>
-          )}
-        </div>
+        items.length===0 && totalNum===0 ? (
+          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({length: 8}).map((_,i)=>(
+              <div key={i} className="rounded-[10px] bg-white border border-[#E9DDC8] p-4 animate-pulse">
+                <div className="h-3 bg-paper-muted rounded w-3/4"></div>
+                <div className="mt-3 h-5 bg-paper-muted rounded-full w-16"></div>
+                <div className="mt-4 w-[148px] h-[148px] mx-auto bg-paper-muted rounded-full"></div>
+                <div className="mt-4 h-4 bg-paper-muted rounded w-1/2 mx-auto"></div>
+                <div className="mt-2 h-3 bg-paper-muted rounded w-3/4 mx-auto"></div>
+              </div>
+            ))}
+          </div>
+        ) : items.length===0 ? (
+          <div className="mt-8 archive-card p-12 text-center text-muted">
+            <div className="w-10 h-10 mx-auto rounded-full border-2 border-dashed border-line flex items-center justify-center animate-pulse text-muted">◌</div>
+            <div className="mt-3 text-sm">Loading onchain POAPs… {totalNum ? `${totalNum+1} registered` : ''}</div>
+            <div className="text-xs mt-1">Fetching 58 onchain — should appear in under a second.</div>
+          </div>
+        ) : (
+          <div className="mt-8 archive-card p-12 text-center text-muted">No POAPs for this filter. Try All or Create one.</div>
+        )
       ) : (
         <>
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
