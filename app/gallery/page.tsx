@@ -24,7 +24,7 @@ export default function GalleryPage() {
     const iv=setInterval(fetchTotal,3500);
     return ()=>{cancelled=true; clearInterval(iv);};
   },[]);
-  const ids = Array.from({length: Math.min(totalNum, 12)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
+  const ids = Array.from({length: Math.min(totalNum+1, 12)}, (_,i)=> totalNum - i).filter(n=>n>=0);
   const eventContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts: eventContracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
   const [uriMap, setUriMap] = useState<Record<number,string>>({});

@@ -58,7 +58,7 @@ export default function VerifyPage() {
               {Array.from({length: Math.min(totalNum+1, 60)}).map((_,i)=> <option key={i} value={String(i)}>#{i} — {i===0 ? 'Onchain POAPs (genesis)' : `Event ${i}`}</option>)}
               {totalNum===0 && <option value="0">#0 — Onchain POAPs</option>}
             </select>
-            <div className="text-xs text-muted mt-1.5">Total {totalNum} onchain • newest first in Explore</div>
+            <div className="text-xs text-muted mt-1.5">Total {totalNum ? totalNum+1 : 0} onchain • newest first in Explore</div>
           </div>
           <div className="min-w-0">
             <label className="text-sm font-medium">Wallet address</label>

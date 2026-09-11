@@ -20,7 +20,7 @@ function useEvents(limit=6) {
     const iv=setInterval(fetchTotal,3500);
     return ()=>{cancelled=true; clearInterval(iv);};
   },[]);
-  const ids = Array.from({length: Math.min(totalNum, limit)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
+  const ids = Array.from({length: Math.min(totalNum+1, limit)}, (_,i)=> totalNum - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
   // uri via direct eth_call to avoid multicall 15KB*6=90KB gas limit / revert for fresh mints
@@ -80,7 +80,7 @@ export default function Home() {
               <div className="rounded-[2px] border border-line bg-[#FFFBF0] p-6 sm:p-7 relative overflow-hidden" style={{backgroundColor:'#FFFBF0', backgroundImage:`repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(155,44,44,0.07) 26px, rgba(155,44,44,0.07) 27px)`}}>
                 <div className="hero-pill">
                   <span className="hero-pill-dot" />
-                  Live on Base Sepolia • {totalNum} events archived
+                  Live on Base Sepolia • {totalNum ? totalNum+1 : 0} events archived
                 </div>
                 <h1 className="hero-title mt-5 max-w-none w-full">
                   Permanent proof<br />

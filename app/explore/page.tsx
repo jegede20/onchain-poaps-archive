@@ -10,7 +10,7 @@ export default function ExplorePage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [show, setShow] = useState(24);
   const [totalNum, setTotalNum] = useState(0);
-  const ids = Array.from({length: Math.min(totalNum, show)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
+  const ids = Array.from({length: Math.min(totalNum+1, show)}, (_,i)=> totalNum - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
   const [uriMap, setUriMap] = useState<Record<number,string>>({});
@@ -90,7 +90,7 @@ export default function ExplorePage() {
         <div className="min-w-0">
           <div className="hero-pill">
             <span className="hero-pill-dot" />
-            Explore • {totalNum} registered
+            Explore • {totalNum ? totalNum+1 : 0} registered
           </div>
           <h1 className="mt-4 font-display text-3xl sm:text-4xl leading-none tracking-tight">Explore POAPs</h1>
           <p className="mt-2 text-sm sm:text-[15px] text-muted leading-6">Newest first — what you see is what calldata holds.</p>
@@ -129,7 +129,7 @@ export default function ExplorePage() {
               </Link>
             ))}
           </div>
-          {show < totalNum && <button onClick={()=>setShow(s=>s+24)} className="mt-8 mx-auto block ghost-button hover:border-brand-red">Load more</button>}
+          {show < totalNum+1 && <button onClick={()=>setShow(s=>s+24)} className="mt-8 mx-auto block ghost-button hover:border-brand-red">Load more</button>}
         </>
       )}
     </div>
