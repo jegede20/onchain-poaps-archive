@@ -84,12 +84,5 @@ export default async function ExplorePage(){
   const initialShow = 24;
   const ids = Array.from({length: Math.min(total+1, initialShow)}, (_,i)=> total - i).filter(n=>n>=0);
   const [eventsMap, urisMap] = await Promise.all([fetchEventsMap(ids), fetchUrisMap(ids)]);
-  // debug comment so curl can see what server got (remove after verify)
-  const debug = `<!-- SSR total:${total} ids:${ids.length} events:${Object.keys(eventsMap).length} uris:${Object.keys(urisMap).length} -->`;
-  return (
-    <>
-      <div dangerouslySetInnerHTML={{__html: debug}} />
-      <ExploreClient initialTotal={total} initialEvents={eventsMap} initialUris={urisMap} />
-    </>
-  );
+  return <ExploreClient initialTotal={total} initialEvents={eventsMap} initialUris={urisMap} />;
 }
