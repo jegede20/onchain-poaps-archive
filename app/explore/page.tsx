@@ -135,7 +135,17 @@ export default function ExplorePage() {
       </div>
 
       {filtered.length===0 ? (
-        <div className="mt-8 archive-card p-12 text-center text-muted">No POAPs for this filter. Try All or Create one.</div>
+        <div className="mt-8 archive-card p-8 text-center">
+          <div className="text-muted">No POAPs for this filter. Try All or Create one.</div>
+          <div className="mt-4 text-xs mono-num text-muted/70 bg-paper-muted border border-line rounded-[2px] p-3 text-left max-w-xl mx-auto">
+            <div>Debug — totalRegistered: {totalNum ? totalNum+1 : 0} (raw totalEvents {totalNum})</div>
+            <div>ids window: [{ids.slice(0,3).join(', ')}{ids.length>3 ? ', …' : ''}] ({ids.length} ids, show {show})</div>
+            <div>eventsMap: {Object.keys(eventsMap).length} loaded • wagmi eventsData: {(eventsData as any)?.length || 0} slots</div>
+            <div>uriMap: {Object.keys(uriMap).length} loaded • filtered for &quot;{filter}&quot;: {filtered.length} • items: {items.length}</div>
+            <div className="mt-2 text-[11px]">If this stays 0, RPC fetch is pending/blocked — check browser console (F12) for CORS/mint errors. New mints appear at top within ~7s.</div>
+          </div>
+          <button onClick={()=>{ setShow(48); setTimeout(()=>setShow(24),100); }} className="mt-4 ghost-button text-xs">Retry fetch</button>
+        </div>
       ) : (
         <>
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
