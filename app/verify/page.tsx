@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useReadContract } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS } from '@/lib/poap';
 import Link from 'next/link';
@@ -10,8 +10,21 @@ export default function VerifyPage() {
   const [checked, setChecked] = useState(false);
   const idNum = Number(poapId) || 0;
 
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
-  const totalNum = total ? Number(total) : 0;
+  const [totalNum, setTotalNum] = useState(0);
+  useEffect(()=>{
+    let cancelled=false;
+    const fetchTotal=async()=>{
+      try{
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:"0xba870686"},"latest"]})});
+        const j=await res.json();
+        const n=parseInt(j.result,16);
+        if(!cancelled && Number.isFinite(n)) setTotalNum(n);
+      }catch{}
+    };
+    fetchTotal();
+    const iv=setInterval(fetchTotal,3500);
+    return ()=>{cancelled=true; clearInterval(iv);};
+  },[]);
   const { data: hasClaimed, isFetching, refetch } = useReadContract({
     address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'hasClaimed',
     args: wallet && /^0x[a-fA-F0-9]{40}$/.test(wallet) ? [BigInt(idNum), wallet as `0x${string}`] : undefined,

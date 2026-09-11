@@ -1,29 +1,71 @@
 "use client";
 import Link from 'next/link';
-import { useReadContract, useReadContracts } from 'wagmi';
+import { useReadContracts } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS, decodeUri } from '@/lib/poap';
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 type Filter = 'all' | 'public' | 'allowlist' | 'signature' | 'mintable';
 
 export default function ExplorePage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [show, setShow] = useState(24);
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents' });
-  const totalNum = total ? Number(total) : 0;
-  const ids = Array.from({length: Math.min(totalNum, 60)}, (_,i)=> totalNum - i).filter(n=>n>=0).slice(0, show);
+  const [totalNum, setTotalNum] = useState(0);
+  const ids = Array.from({length: Math.min(totalNum, show)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
-  const uriContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'uri' as const, args: [BigInt(id)] as const }));
-  const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0 } as any });
-  const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0 } as any });
+  const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
+  const [uriMap, setUriMap] = useState<Record<number,string>>({});
+  useEffect(()=>{
+    let cancelled=false;
+    const fetchTotal=async()=>{
+      try{
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:"0xba870686"},"latest"]})});
+        const j=await res.json();
+        const n=parseInt(j.result,16);
+        if(!cancelled && Number.isFinite(n)) setTotalNum(n);
+      }catch{}
+    };
+    fetchTotal();
+    const iv=setInterval(fetchTotal,3500);
+    return ()=>{cancelled=true; clearInterval(iv);};
+  },[]);
+  useEffect(()=>{
+    if(ids.length===0) return;
+    let cancelled=false;
+    const sel="0x0e89341c";
+    const pad=(n:number)=> n.toString(16).padStart(64,'0');
+    const fetchOne=async(id:number)=>{
+      const data=sel+pad(id);
+      try{
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]})});
+        const j=await res.json();
+        const hex=j.result as string;
+        if(!hex||hex==="0x") return;
+        const lenHex=hex.slice(2+64,2+128);
+        const len=parseInt(lenHex,16);
+        if(!Number.isFinite(len)||len===0) return;
+        const dataHex=hex.slice(2+128,2+128+len*2);
+        const bytes=Uint8Array.from(dataHex.match(/.{1,2}/g)!.map(b=>parseInt(b,16)));
+        const str=new TextDecoder().decode(bytes);
+        if(!cancelled) setUriMap(m=>({...m,[id]:str}));
+      }catch{}
+    };
+    (async()=>{
+      for(let i=0;i<ids.length;i+=4){
+        await Promise.all(ids.slice(i,i+4).map(fetchOne));
+        await new Promise(r=>setTimeout(r,120));
+      }
+    })();
+    const iv=setInterval(()=>{ ids.slice(0,12).forEach(fetchOne); },7000);
+    return ()=>{cancelled=true; clearInterval(iv);};
+  },[ids.join(",")]);
 
   const items = useMemo(()=> ids.map((id, idx)=>{
     const r = (eventsData as any)?.[idx]?.result;
-    const uri = (uriData as any)?.[idx]?.result as string|undefined;
+    const uri = uriMap[id] as string|undefined;
     if (!r) return null;
     const decoded = uri ? decodeUri(uri) : null;
     return { id, name: r[0], description: r[1], location: r[3], allowlistRoot: r[4], creator: r[6], createdAt: r[7], isSoulbound: r[9], isPublic: r[10], image: decoded?.image || null, hasAllowlist: r[4] !== '0x0000000000000000000000000000000000000000000000000000000000000000' };
-  }).filter(Boolean) as any[], [ids, eventsData, uriData]);
+  }).filter(Boolean) as any[], [ids, eventsData, uriMap]);
 
   const filtered = useMemo(()=> {
     if (filter==='all') return items;
