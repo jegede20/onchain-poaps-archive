@@ -31,42 +31,26 @@ async function fetchTotal(): Promise<number> {
 
 async function fetchEventsMap(ids: number[]): Promise<Record<number, any>> {
   if(ids.length===0) return {};
-  for(const c of [client, clientB]){
-    try{
-      const res = await c.multicall({
-        contracts: ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI as any, functionName: 'events' as const, args: [BigInt(id)] as const })),
-        allowFailure: true,
-      });
-      const out: Record<number, any> = {};
-      res.forEach((r, idx)=>{
-        const id = ids[idx];
-        if(r.status==='success' && r.result) out[id]=r.result as any;
-      });
-      if(Object.keys(out).length) return out;
-    }catch{}
+  // direct individual fetch is more reliable on Vercel than multicall (which gave 0)
+  const { decodeFunctionResult } = await import('viem');
+  const sel="0x0b791430";
+  const out: Record<number, any> = {};
+  for(const rpc of [RPC_A, RPC_B]){
+    await Promise.all(ids.map(async (id)=>{
+      if(out[id]) return;
+      const data = sel + id.toString(16).padStart(64,'0');
+      try{
+        const res2 = await fetch(rpc,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]}), cache: 'no-store' as any});
+        const j2 = await res2.json();
+        const hex=j2.result as string;
+        if(!hex || hex==="0x" || hex.length<10) return;
+        const decoded = decodeFunctionResult({ abi: POAP_ABI as any, functionName: 'events', data: hex as `0x${string}` }) as any;
+        if(decoded) out[id]=decoded;
+      }catch{}
+    }));
+    if(Object.keys(out).length >= Math.min(ids.length, 12)) return out;
   }
-  // fallback individual
-  try{
-    const { decodeFunctionResult } = await import('viem');
-    const sel="0x0b791430";
-    const out: Record<number, any> = {};
-    for(const rpc of [RPC_A, RPC_B]){
-      await Promise.all(ids.slice(0,12).map(async (id)=>{
-        if(out[id]) return;
-        const data = sel + id.toString(16).padStart(64,'0');
-        try{
-          const res2 = await fetch(rpc,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]}), cache: 'no-store' as any});
-          const j2 = await res2.json();
-          const hex=j2.result as string;
-          if(!hex || hex==="0x" || hex.length<10) return;
-          const decoded = decodeFunctionResult({ abi: POAP_ABI as any, functionName: 'events', data: hex as `0x${string}` }) as any;
-          if(decoded) out[id]=decoded;
-        }catch{}
-      }));
-      if(Object.keys(out).length) return out;
-    }
-    return out;
-  }catch{ return {}; }
+  return out;
 }
 
 async function fetchUrisMap(ids: number[]): Promise<Record<number,string>> {
