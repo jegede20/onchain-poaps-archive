@@ -2,19 +2,52 @@
 import Link from 'next/link';
 import { useReadContract, useReadContracts } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS, decodeUri } from '@/lib/poap';
+import { useEffect, useState } from 'react';
 
-function useEvents(limit=12) {
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 4000 } as any });
+function useEvents(limit=6) {
+  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 3000 } as any });
   const totalNum = total ? Number(total) : 0;
   const ids = Array.from({length: Math.min(totalNum, limit)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
-  const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
-  const uriContracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'uri' as const, args: [BigInt(id)] as const }));
-  const { data: uriData } = useReadContracts({ contracts: uriContracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
+  const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
+  // uri via direct fetch to avoid multicall gas limit for large 15KB uris (batch of 12 = 180KB)
+  const [uriMap, setUriMap] = useState<Record<number,string>>({});
+  useEffect(()=>{
+    if(ids.length===0) return;
+    let cancelled=false;
+    const sel="0x0e89341c";
+    const pad = (n:number)=> n.toString(16).padStart(64,'0');
+    const fetchOne = async (id:number)=>{
+      const data = sel+pad(id);
+      try{
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data}, "latest"]})});
+        const j=await res.json();
+        const hex=j.result as string;
+        if(!hex || hex==="0x") return;
+        const lenHex=hex.slice(2+64,2+128);
+        const len=parseInt(lenHex,16);
+        const dataHex=hex.slice(2+128,2+128+len*2);
+        const bytes=Uint8Array.from(dataHex.match(/.{1,2}/g)!.map(b=>parseInt(b,16)));
+        const str=new TextDecoder().decode(bytes);
+        if(!cancelled) setUriMap(m=>({...m,[id]:str}));
+      }catch{}
+    };
+    // fetch sequentially to avoid rate limit, 3 at a time
+    (async()=>{
+      for(let i=0;i<ids.length;i+=3){
+        await Promise.all(ids.slice(i,i+3).map(fetchOne));
+        await new Promise(r=>setTimeout(r,150));
+      }
+    })();
+    const iv=setInterval(()=>{
+      for(let i=0;i<ids.length;i+=3) ids.slice(i,i+3).forEach(fetchOne);
+    },6000);
+    return ()=>{cancelled=true; clearInterval(iv);};
+  },[ids.join(",")]);
   const events = ids.map((id, idx) => {
     const r = (eventsData as any)?.[idx]?.result;
     if (!r) return null;
-    const uri = (uriData as any)?.[idx]?.result as string | undefined;
+    const uri = uriMap[id];
     const decoded = uri ? decodeUri(uri) : null;
     const image = decoded?.image || null;
     return { id, name: r[0], description: r[1], eventDate: r[2], location: r[3], allowlistRoot: r[4], svgImage: r[5], creator: r[6], createdAt: r[7], externalUrl: r[8], isSoulbound: r[9], isPublic: r[10], decoded, image };
