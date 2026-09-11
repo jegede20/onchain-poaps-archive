@@ -14,26 +14,31 @@ export default function ExplorePage() {
   const ids = Array.from({length: Math.min(totalNum+1, show)}, (_,i)=> totalNum - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
-  // Direct fallback for events — ensures All tab shows even if multicall/wagmi stalls (large SVG history, cache miss)
+  // Direct fallback for events — simple selector avoids viem encode edge-case that left eventsMap at 0
   const [eventsMap, setEventsMap] = useState<Record<number, any>>({});
   useEffect(()=>{
     if(ids.length===0) return;
     let cancelled=false;
+    const sel="0x0b791430";
     const fetchOne=async(id:number)=>{
+      const data = sel + id.toString(16).padStart(64,'0');
       try{
-        const data = encodeFunctionData({ abi: POAP_ABI as any, functionName: 'events', args: [BigInt(id)] });
         const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]})});
         const j=await res.json();
         const hex=j.result as string;
-        if(!hex || hex==="0x") return;
-        const decoded = decodeFunctionResult({ abi: POAP_ABI as any, functionName: 'events', data: hex as `0x${string}` }) as any;
-        if(!cancelled) setEventsMap(m=>({...m,[id]: decoded}));
+        if(!hex || hex==="0x" || !hex.startsWith("0x") || hex.length < 10) return;
+        try{
+          const decoded = decodeFunctionResult({ abi: POAP_ABI as any, functionName: 'events', data: hex as `0x${string}` }) as any;
+          if(!cancelled && decoded) setEventsMap(m=>({...m,[id]: decoded}));
+        }catch(e){
+          // viem decode can fail on some nodes — fallback: keep wagmi data
+        }
       }catch{}
     };
     (async()=>{
       for(let i=0;i<ids.length;i+=4){
         await Promise.all(ids.slice(i,i+4).map(fetchOne));
-        await new Promise(r=>setTimeout(r,80));
+        await new Promise(r=>setTimeout(r,90));
       }
     })();
     const iv=setInterval(()=> ids.slice(0,12).forEach(fetchOne), 7000);
@@ -135,16 +140,16 @@ export default function ExplorePage() {
       </div>
 
       {filtered.length===0 ? (
-        <div className="mt-8 archive-card p-8 text-center">
-          <div className="text-muted">No POAPs for this filter. Try All or Create one.</div>
-          <div className="mt-4 text-xs mono-num text-muted/70 bg-paper-muted border border-line rounded-[2px] p-3 text-left max-w-xl mx-auto">
-            <div>Debug — totalRegistered: {totalNum ? totalNum+1 : 0} (raw totalEvents {totalNum})</div>
-            <div>ids window: [{ids.slice(0,3).join(', ')}{ids.length>3 ? ', …' : ''}] ({ids.length} ids, show {show})</div>
-            <div>eventsMap: {Object.keys(eventsMap).length} loaded • wagmi eventsData: {(eventsData as any)?.length || 0} slots</div>
-            <div>uriMap: {Object.keys(uriMap).length} loaded • filtered for &quot;{filter}&quot;: {filtered.length} • items: {items.length}</div>
-            <div className="mt-2 text-[11px]">If this stays 0, RPC fetch is pending/blocked — check browser console (F12) for CORS/mint errors. New mints appear at top within ~7s.</div>
-          </div>
-          <button onClick={()=>{ setShow(48); setTimeout(()=>setShow(24),100); }} className="mt-4 ghost-button text-xs">Retry fetch</button>
+        <div className="mt-8 archive-card p-12 text-center text-muted">
+          {items.length===0 ? (
+            <div>
+              <div className="w-10 h-10 mx-auto rounded-full border-2 border-dashed border-line flex items-center justify-center animate-pulse text-muted">◌</div>
+              <div className="mt-3 text-sm">Loading onchain POAPs… {totalNum ? `${totalNum+1} registered` : ''}</div>
+              <div className="text-xs mt-1">Newest mints appear at the top within seconds — no refresh needed.</div>
+            </div>
+          ) : (
+            <div>No POAPs for this filter. Try All or Create one.</div>
+          )}
         </div>
       ) : (
         <>
