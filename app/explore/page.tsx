@@ -6,43 +6,56 @@ import { baseSepolia } from 'viem/chains';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const client = createPublicClient({ chain: baseSepolia, transport: http("https://sepolia.base.org") });
+const RPC_A = "https://base-sepolia-rpc.publicnode.com";
+const RPC_B = "https://sepolia.base.org";
+const client = createPublicClient({ chain: baseSepolia, transport: http(RPC_A) });
+const clientB = createPublicClient({ chain: baseSepolia, transport: http(RPC_B) });
 
 async function fetchTotal(): Promise<number> {
-  // try viem first, then raw fetch fallback — viem handles retries better on Vercel
-  try{
-    const n = await client.readContract({ address: POAP_ADDRESS, abi: POAP_ABI as any, functionName: 'totalEvents' }) as unknown as bigint;
-    return Number(n);
-  }catch{
+  for(const c of [client, clientB]){
     try{
-      const res = await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:"0xba870686"},"latest"]}), cache: 'no-store' as any});
+      const n = await c.readContract({ address: POAP_ADDRESS, abi: POAP_ABI as any, functionName: 'totalEvents' }) as unknown as bigint;
+      if(n!==undefined) return Number(n);
+    }catch{}
+  }
+  for(const rpc of [RPC_A, RPC_B]){
+    try{
+      const res = await fetch(rpc,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:"0xba870686"},"latest"]}), cache: 'no-store' as any});
       const j = await res.json();
       const n = parseInt(j.result,16);
-      return Number.isFinite(n) ? n : 0;
-    }catch{ return 0; }
+      if(Number.isFinite(n)) return n;
+    }catch{}
   }
+  return 0;
 }
 
 async function fetchEventsMap(ids: number[]): Promise<Record<number, any>> {
   if(ids.length===0) return {};
+  for(const c of [client, clientB]){
+    try{
+      const res = await c.multicall({
+        contracts: ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI as any, functionName: 'events' as const, args: [BigInt(id)] as const })),
+        allowFailure: true,
+      });
+      const out: Record<number, any> = {};
+      res.forEach((r, idx)=>{
+        const id = ids[idx];
+        if(r.status==='success' && r.result) out[id]=r.result as any;
+      });
+      if(Object.keys(out).length) return out;
+    }catch{}
+  }
+  // fallback individual
   try{
-    const res = await client.multicall({
-      contracts: ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI as any, functionName: 'events' as const, args: [BigInt(id)] as const })),
-      allowFailure: true,
-    });
+    const { decodeFunctionResult } = await import('viem');
+    const sel="0x0b791430";
     const out: Record<number, any> = {};
-    res.forEach((r, idx)=>{
-      const id = ids[idx];
-      if(r.status==='success' && r.result) out[id]=r.result as any;
-    });
-    // if multicall returned nothing (e.g. rate-limit), fallback to individual fetches
-    if(Object.keys(out).length===0){
-      const { decodeFunctionResult } = await import('viem');
-      const sel="0x0b791430";
+    for(const rpc of [RPC_A, RPC_B]){
       await Promise.all(ids.slice(0,12).map(async (id)=>{
+        if(out[id]) return;
         const data = sel + id.toString(16).padStart(64,'0');
         try{
-          const res2 = await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]}), cache: 'no-store' as any});
+          const res2 = await fetch(rpc,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]}), cache: 'no-store' as any});
           const j2 = await res2.json();
           const hex=j2.result as string;
           if(!hex || hex==="0x" || hex.length<10) return;
@@ -50,32 +63,35 @@ async function fetchEventsMap(ids: number[]): Promise<Record<number, any>> {
           if(decoded) out[id]=decoded;
         }catch{}
       }));
+      if(Object.keys(out).length) return out;
     }
     return out;
-  }catch{
-    return {};
-  }
+  }catch{ return {}; }
 }
 
 async function fetchUrisMap(ids: number[]): Promise<Record<number,string>> {
   const sel="0x0e89341c";
   const out: Record<number,string> = {};
-  await Promise.all(ids.map(async (id)=>{
-    const data=sel+id.toString(16).padStart(64,'0');
-    try{
-      const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]}), cache: 'no-store'});
-      const j=await res.json();
-      const hex=j.result as string;
-      if(!hex||hex==="0x") return;
-      const lenHex=hex.slice(2+64,2+128);
-      const len=parseInt(lenHex,16);
-      if(!Number.isFinite(len)||len===0) return;
-      const dataHex=hex.slice(2+128,2+128+len*2);
-      const bytes=Uint8Array.from(dataHex.match(/.{1,2}/g)!.map(b=>parseInt(b,16)));
-      const str=new TextDecoder().decode(bytes);
-      out[id]=str;
-    }catch{}
-  }));
+  for(const rpc of [RPC_A, RPC_B]){
+    await Promise.all(ids.map(async (id)=>{
+      if(out[id]) return;
+      const data=sel+id.toString(16).padStart(64,'0');
+      try{
+        const res=await fetch(rpc,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]}), cache: 'no-store' as any});
+        const j=await res.json();
+        const hex=j.result as string;
+        if(!hex||hex==="0x") return;
+        const lenHex=hex.slice(2+64,2+128);
+        const len=parseInt(lenHex,16);
+        if(!Number.isFinite(len)||len===0) return;
+        const dataHex=hex.slice(2+128,2+128+len*2);
+        const bytes=Uint8Array.from(dataHex.match(/.{1,2}/g)!.map(b=>parseInt(b,16)));
+        const str=new TextDecoder().decode(bytes);
+        out[id]=str;
+      }catch{}
+    }));
+    if(Object.keys(out).length) break;
+  }
   return out;
 }
 

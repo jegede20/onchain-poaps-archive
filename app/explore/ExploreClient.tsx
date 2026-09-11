@@ -15,6 +15,25 @@ export default function ExploreClient({ initialTotal = 0, initialEvents = {} as 
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
   const [eventsMap, setEventsMap] = useState<Record<number, any>>(initialEvents);
+  // instant cache — if server had 0, hydrate from last visit so All never flashes skeleton
+  useEffect(()=>{
+    try{
+      const c = localStorage.getItem('explore-events-cache');
+      const u = localStorage.getItem('explore-uris-cache');
+      const tot = localStorage.getItem('explore-total-cache');
+      if(c && Object.keys(eventsMap).length===0){
+        const parsed = JSON.parse(c);
+        if(Object.keys(parsed).length) setEventsMap(parsed);
+      }
+      if(u && Object.keys(uriMap).length===0){
+        // uriMap not yet defined here, will handle below
+      }
+      if(tot && totalNum===0){
+        const n = parseInt(tot,10);
+        if(Number.isFinite(n) && n>0) setTotalNum(n);
+      }
+    }catch{}
+  },[]);
   useEffect(()=>{
     if(ids.length===0) return;
     let cancelled=false;
@@ -45,6 +64,28 @@ export default function ExploreClient({ initialTotal = 0, initialEvents = {} as 
   useEffect(()=>{
     if(Object.keys(initialUris).length && Object.keys(uriMap).length===0) setUriMap(initialUris);
   },[initialUris]);
+  useEffect(()=>{
+    try{
+      if(Object.keys(eventsMap).length) localStorage.setItem('explore-events-cache', JSON.stringify(eventsMap));
+    }catch{}
+  },[eventsMap]);
+  useEffect(()=>{
+    try{
+      if(Object.keys(uriMap).length) localStorage.setItem('explore-uris-cache', JSON.stringify(uriMap));
+      // store total too
+      if(totalNum) localStorage.setItem('explore-total-cache', String(totalNum));
+    }catch{}
+  },[uriMap, totalNum]);
+  // also try to hydrate uris from cache on mount
+  useEffect(()=>{
+    try{
+      const u = localStorage.getItem('explore-uris-cache');
+      if(u && Object.keys(uriMap).length===0){
+        const parsed = JSON.parse(u);
+        if(Object.keys(parsed).length) setUriMap(parsed as any);
+      }
+    }catch{}
+  },[]);
   useEffect(()=>{
     let cancelled=false;
     const fetchTotal=async()=>{
