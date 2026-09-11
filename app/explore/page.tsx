@@ -138,20 +138,32 @@ export default function ExplorePage() {
         <div className="mt-8 archive-card p-12 text-center text-muted">No POAPs for this filter. Try All or Create one.</div>
       ) : (
         <>
-          <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((it:any)=> {
-              const dateLabel = it.createdAt ? new Date(Number(it.createdAt)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+              const dateLabel = it.createdAt ? new Date(Number(it.createdAt)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : it.description ? '' : '';
+              const series = String((it.id % 4) + 1).padStart(2,'0');
+              const pill = it.hasAllowlist ? 'ALLOWLIST' : it.isPublic ? 'PUBLIC' : 'QR CLAIM';
+              const pillStyle = it.hasAllowlist ? 'bg-[#FFF0F0] border-[#E9AAAA] text-[#9B2C2C]' : it.isPublic ? 'bg-white border-line text-muted' : 'bg-[#FFF0F0] border-[#E9AAAA] text-[#9B2C2C]';
               return (
-              <Link key={it.id} href={`/event/${it.id}`} className="group relative rounded-[14px] bg-[#FFFBF0] border border-[#E9DDC8] overflow-hidden flex flex-col items-center p-5 pt-7 hover:shadow-md hover:border-[#DCCBB0] transition-all">
-                <div className="absolute top-3 left-3 w-7 h-7 rounded-full bg-white border border-[#E9DDC8] flex items-center justify-center shadow-sm">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9B2C2C" strokeWidth="1.6"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.2" fill="#9B2C2C" stroke="none"/></svg>
+              <Link key={it.id} href={`/event/${it.id}`} className="group relative rounded-[10px] bg-white border border-[#E9DDC8] overflow-hidden flex flex-col p-4 hover:shadow-md hover:border-[#DCCBB0] transition-all">
+                <div className="flex items-center justify-between text-[10px] tracking-[0.06em] font-medium text-muted mono-num">
+                  <span className="truncate">ONCHAIN POAP_ No. {String(it.id).padStart(4,'0')} · SERIES {series}</span>
                 </div>
-                <div className="w-[160px] h-[160px] flex items-center justify-center">
-                  {it.image ? <img src={it.image} alt={it.name} className="w-full h-full object-contain drop-shadow-[0_6px_16px_rgba(46,26,15,0.10)] group-hover:scale-[1.02] transition-transform duration-300" /> : <div className="w-16 h-16 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num">{String(it.id).padStart(2,'0')}</div>}
+                <div className="mt-2">
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.08em] border ${pillStyle}`}>{pill}</span>
                 </div>
-                <div className="mt-4 text-center w-full">
-                  <div className="font-semibold text-ink text-[15px] leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{it.name}</div>
-                  <div className="text-xs text-muted mt-1">{dateLabel}</div>
+                <div className="relative mt-3 flex justify-center">
+                  <div className="absolute top-1 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border border-[#E9DDC8] flex items-center justify-center shadow-sm z-10">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9B2C2C" strokeWidth="1.6"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.1" fill="#9B2C2C" stroke="none"/></svg>
+                  </div>
+                  <div className="w-[148px] h-[148px] flex items-center justify-center">
+                    {it.image ? <img src={it.image} alt={it.name} className="w-full h-full object-contain drop-shadow-[0_6px_16px_rgba(46,26,15,0.08)] group-hover:scale-[1.02] transition-transform duration-300" /> : <div className="w-14 h-14 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num text-sm">{String(it.id).padStart(2,'0')}</div>}
+                  </div>
+                </div>
+                <div className="mt-3 text-center">
+                  <div className="font-bold text-ink text-[15px] leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{it.name}</div>
+                  <div className="text-xs text-muted mt-1 line-clamp-1">{dateLabel}{it.location ? ` · ${it.location}` : ''}</div>
+                  <div className="text-xs text-muted/80 mt-1 line-clamp-1 min-h-[16px]">{it.description || ''}</div>
                 </div>
                 <div className="w-full h-px bg-[#EDE6D6] mt-4" />
                 <div className="w-full flex items-center justify-between mt-3">
