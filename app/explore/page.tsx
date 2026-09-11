@@ -35,8 +35,12 @@ export default function ExplorePage() {
         }
       }catch{}
     };
-    // instant parallel — no artificial stagger, so All shows in <600ms
-    Promise.all(ids.map(fetchOne));
+    // batched 6 — fast but not 24 parallel (avoids sepolia.base.org 429), no 90ms stagger
+    (async()=>{
+      for(let i=0;i<ids.length;i+=6){
+        await Promise.all(ids.slice(i,i+6).map(fetchOne));
+      }
+    })();
     const iv=setInterval(()=> ids.forEach(fetchOne), 7000);
     return ()=>{cancelled=true; clearInterval(iv);};
   },[ids.join(",")]);
@@ -76,7 +80,7 @@ export default function ExplorePage() {
         if(!cancelled) setUriMap(m=>({...m,[id]:str}));
       }catch{}
     };
-    Promise.all(ids.map(fetchOne));
+    (async()=>{ for(let i=0;i<ids.length;i+=6){ await Promise.all(ids.slice(i,i+6).map(fetchOne)); } })();
     const iv=setInterval(()=>{ ids.forEach(fetchOne); },7000);
     return ()=>{cancelled=true; clearInterval(iv);};
   },[ids.join(",")]);
