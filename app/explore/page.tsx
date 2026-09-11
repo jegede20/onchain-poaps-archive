@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useReadContracts } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS, decodeUri } from '@/lib/poap';
+import { decodeFunctionResult, encodeFunctionData } from 'viem';
 import { useState, useEffect, useMemo } from 'react';
 
 type Filter = 'all' | 'public' | 'allowlist' | 'signature' | 'mintable';
@@ -13,6 +14,31 @@ export default function ExplorePage() {
   const ids = Array.from({length: Math.min(totalNum+1, show)}, (_,i)=> totalNum - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 4000 } as any });
+  // Direct fallback for events — ensures All tab shows even if multicall/wagmi stalls (large SVG history, cache miss)
+  const [eventsMap, setEventsMap] = useState<Record<number, any>>({});
+  useEffect(()=>{
+    if(ids.length===0) return;
+    let cancelled=false;
+    const fetchOne=async(id:number)=>{
+      try{
+        const data = encodeFunctionData({ abi: POAP_ABI as any, functionName: 'events', args: [BigInt(id)] });
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data},"latest"]})});
+        const j=await res.json();
+        const hex=j.result as string;
+        if(!hex || hex==="0x") return;
+        const decoded = decodeFunctionResult({ abi: POAP_ABI as any, functionName: 'events', data: hex as `0x${string}` }) as any;
+        if(!cancelled) setEventsMap(m=>({...m,[id]: decoded}));
+      }catch{}
+    };
+    (async()=>{
+      for(let i=0;i<ids.length;i+=4){
+        await Promise.all(ids.slice(i,i+4).map(fetchOne));
+        await new Promise(r=>setTimeout(r,80));
+      }
+    })();
+    const iv=setInterval(()=> ids.slice(0,12).forEach(fetchOne), 7000);
+    return ()=>{cancelled=true; clearInterval(iv);};
+  },[ids.join(",")]);
   const [uriMap, setUriMap] = useState<Record<number,string>>({});
   useEffect(()=>{
     let cancelled=false;
@@ -60,12 +86,16 @@ export default function ExplorePage() {
   },[ids.join(",")]);
 
   const items = useMemo(()=> ids.map((id, idx)=>{
-    const r = (eventsData as any)?.[idx]?.result;
+    const rDirect = eventsMap[id] as any;
+    const rWagmi = (eventsData as any)?.[idx]?.result as any;
+    const r = rDirect || rWagmi;
     const uri = uriMap[id] as string|undefined;
     if (!r) return null;
-    const decoded = uri ? decodeUri(uri) : null;
-    return { id, name: r[0], description: r[1], location: r[3], allowlistRoot: r[4], creator: r[6], createdAt: r[7], isSoulbound: r[9], isPublic: r[10], image: decoded?.image || null, hasAllowlist: r[4] !== '0x0000000000000000000000000000000000000000000000000000000000000000' };
-  }).filter(Boolean) as any[], [ids, eventsData, uriMap]);
+    // viem decode returns array-like object with named keys, normalize to array indices
+    const arr = Array.isArray(r) ? r : [r.name, r.description, r.eventDate, r.location, r.allowlistRoot, r.svgImage, r.creator, r.createdAt, r.externalUrl, r.isSoulbound, r.isPublic];
+    const uriDecoded = uri ? decodeUri(uri) : null;
+    return { id, name: arr[0], description: arr[1], location: arr[3], allowlistRoot: arr[4], creator: arr[6], createdAt: arr[7], isSoulbound: arr[9], isPublic: arr[10], image: uriDecoded?.image || null, hasAllowlist: arr[4] !== '0x0000000000000000000000000000000000000000000000000000000000000000' };
+  }).filter(Boolean) as any[], [ids, eventsData, uriMap, eventsMap]);
 
   const filtered = useMemo(()=> {
     if (filter==='all') return items;
