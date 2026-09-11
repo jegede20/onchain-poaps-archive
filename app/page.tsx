@@ -1,11 +1,25 @@
 "use client";
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useReadContract, useReadContracts } from 'wagmi';
 import { POAP_ABI, POAP_ADDRESS, decodeUri } from '@/lib/poap';
 
 function useEvents(limit=6) {
-  const { data: total } = useReadContract({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'totalEvents', query: { refetchInterval: 4000 } as any });
-  const totalNum = total ? Number(total) : 0;
+  const [totalNum, setTotalNum] = useState(0);
+  useEffect(()=>{
+    let cancelled=false;
+    const fetchTotal=async()=>{
+      try{
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:"0xba870686"},"latest"]})});
+        const j=await res.json();
+        const n=parseInt(j.result,16);
+        if(!cancelled && Number.isFinite(n)) setTotalNum(n);
+      }catch{}
+    };
+    fetchTotal();
+    const iv=setInterval(fetchTotal,3500);
+    return ()=>{cancelled=true; clearInterval(iv);};
+  },[]);
   const ids = Array.from({length: Math.min(totalNum, limit)}, (_,i)=> totalNum - 1 - i).filter(n=>n>=0);
   const contracts = ids.map(id=> ({ address: POAP_ADDRESS, abi: POAP_ABI, functionName: 'events' as const, args: [BigInt(id)] as const }));
   const { data: eventsData } = useReadContracts({ contracts, query: { enabled: ids.length>0, refetchInterval: 5000 } as any });
