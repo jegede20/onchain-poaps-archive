@@ -67,7 +67,7 @@ export default function GalleryPage() {
     const decoded = uri ? decodeUri(uri) : null;
     const bal = address ? Number((balances as any)?.[idx]?.result || 0) : 0;
     if (!evt) return null;
-    return { id, name: evt[0], description: evt[1], location: evt[3], creator: evt[6], isSoulbound: evt[9], isPublic: evt[10], image: decoded?.image || null, owned: bal>0, decoded };
+    return { id, name: evt[0], description: evt[1], eventDate: evt[2], location: evt[3], creator: evt[6], isSoulbound: evt[9], isPublic: evt[10], createdAt: evt[7], image: decoded?.image || null, owned: bal>0, decoded };
   }).filter(Boolean) as any[];
 
   const base = (tab==='owned' ? items.filter(i=>i.owned) : items).filter(i=>{
@@ -123,28 +123,32 @@ export default function GalleryPage() {
       {!address && tab==='owned' && <div className="mt-6 text-sm text-muted">Connect wallet to see owned POAPs.</div>}
 
       <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map(item=> (
-          <Link key={item.id} href={`/event/${item.id}`} className="rounded-[2px] border border-line bg-white overflow-hidden group hover:border-ink hover:shadow-sm transition-all">
-            <div className="aspect-[4/3] bg-paper-muted border-b border-line overflow-hidden flex items-center justify-center p-0 relative">
-              {item.image ? (
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
-              ) : (
-                <div className="w-16 h-16 rounded-[2px] bg-ink text-paper flex items-center justify-center font-medium mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
-              )}
-              {item.owned && <div className="absolute top-3 left-3 badge badge-success text-xs shadow-sm">Owned</div>}
-              {item.isSoulbound && <div className="absolute top-3 right-3 badge badge-neutral text-[10px]">Soulbound</div>}
+        {filtered.map(item=> {
+          const dateLabel = item.createdAt ? new Date(Number(item.createdAt)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : item.eventDate ? new Date(Number(item.eventDate)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+          return (
+          <Link key={item.id} href={`/event/${item.id}`} className="group relative rounded-[14px] bg-[#FFFBF0] border border-[#E9DDC8] overflow-hidden flex flex-col items-center p-5 pt-7 hover:shadow-md hover:border-[#DCCBB0] transition-all">
+            <div className="absolute top-3 left-3 w-7 h-7 rounded-full bg-white border border-[#E9DDC8] flex items-center justify-center shadow-sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9B2C2C" strokeWidth="1.6"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.2" fill="#9B2C2C" stroke="none"/></svg>
             </div>
-            <div className="p-4">
-              <div className="font-medium line-clamp-1 group-hover:text-brand-red transition-colors">{item.name}</div>
-              <div className="text-xs text-muted line-clamp-2 mt-1">{item.description || 'No description'}</div>
-              <div className="mt-3 flex items-center gap-2">
-                <span className={`badge text-[10px] ${item.isPublic ? 'badge-success' : 'badge-neutral'}`}>{item.isPublic?'Public':'Private'}</span>
-                <span className="text-xs text-muted mono-num">#{item.id} • {item.location || 'Onchain'}</span>
-              </div>
-              <div className="mono-num text-[11px] text-muted mt-2 truncate">{item.creator.slice(0,8)}…{item.creator.slice(-6)}</div>
+            {item.owned && <div className="absolute top-3 right-3 badge badge-success text-[10px] shadow-sm">Owned</div>}
+            <div className="w-[180px] h-[180px] flex items-center justify-center relative">
+              {item.image ? (
+                <img src={item.image} alt={item.name} className="w-full h-full object-contain drop-shadow-[0_6px_16px_rgba(46,26,15,0.10)] group-hover:scale-[1.02] transition-transform duration-300" />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num group-hover:scale-105 transition-transform">{String(item.id).padStart(2,'0')}</div>
+              )}
+            </div>
+            <div className="mt-4 text-center w-full">
+              <div className="font-semibold text-ink text-[15px] leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{item.name}</div>
+              <div className="text-xs text-muted mt-1">{dateLabel}</div>
+            </div>
+            <div className="w-full h-px bg-[#EDE6D6] mt-4" />
+            <div className="w-full flex items-center justify-between mt-3">
+              <span className="text-[11px] font-bold tracking-[0.14em] text-[#9B2C2C]">MINT STAMP</span>
+              <span className="mono-num text-xs text-muted">{item.creator.slice(0,6)}…{item.creator.slice(-4)}</span>
             </div>
           </Link>
-        ))}
+        )})}
       </div>
       {filtered.length===0 && <div className="mt-12 rounded-[2px] border border-dashed border-line bg-paper-muted p-12 text-center text-muted">No POAPs found. Try another search or switch tab.</div>}
     </div>

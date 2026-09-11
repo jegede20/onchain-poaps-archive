@@ -55,6 +55,7 @@ export default function CreatePage() {
   const [optimized, setOptimized] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [justUsed, setJustUsed] = useState(false);
 
   const { data: hash, writeContract, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -91,16 +92,26 @@ export default function CreatePage() {
 
   if (isSuccess && hash) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-        <div className="archive-card p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-success text-white flex items-center justify-center mx-auto">✓</div>
-          <h2 className="mt-4 font-display text-2xl font-medium">POAP Registered</h2>
-          <p className="mt-2 text-muted">Transaction confirmed on Base Sepolia.</p>
-          <a href={`https://sepolia.basescan.org/tx/${hash}`} target="_blank" className="mt-4 inline-block underline text-brand-red">View on BaseScan →</a>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link href="/gallery" className="ink-button">Open Gallery</Link>
-            <Link href="/" className="ghost-button">Back to Archive</Link>
-          </div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 text-center">
+        {/* Minted badge — our own build design, large centered like screenshot */}
+        <div className="mx-auto w-[300px] sm:w-[360px] aspect-square flex items-center justify-center relative">
+          <div className="absolute inset-0 rounded-full opacity-[0.04]" style={{background:'radial-gradient(circle at center, #9B2C2C 1px, transparent 1px)', backgroundSize:'14px 14px'}} />
+          <div dangerouslySetInnerHTML={{ __html: svgToUse }} className="w-full h-full relative drop-shadow-[0_8px_24px_rgba(46,26,15,0.12)]" />
+        </div>
+        <h2 className="mt-8 font-display text-[26px] sm:text-[30px] font-bold tracking-[-0.015em] leading-tight text-ink">
+          “{name || 'FIST'}” is live onchain <span className="inline-block translate-y-[1px]">🎉</span>
+        </h2>
+        <p className="mt-3 text-[14px] sm:text-[15px] text-muted leading-6 max-w-xl mx-auto">
+          POAP is registered forever on Base Sepolia. Artwork and metadata are stored fully onchain.
+        </p>
+        <p className="mt-2 text-xs mono-num text-muted/70 break-all">tx {hash.slice(0,10)}…{hash.slice(-8)}</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link href="/gallery" className="px-6 py-3 rounded-[2px] bg-[#9B2C2C] text-white text-sm font-medium shadow-[0_4px_14px_rgba(155,44,44,0.35)] hover:bg-[#7a2222] transition-colors border border-[#9B2C2C]">
+            Go to Gallery
+          </Link>
+          <a href={`https://sepolia.basescan.org/tx/${hash}`} target="_blank" rel="noreferrer" className="px-6 py-3 rounded-[2px] bg-white border-2 border-line text-sm font-medium hover:border-brand-red/30 hover:bg-paper-muted transition-colors text-ink">
+            View on Base →
+          </a>
         </div>
       </div>
     );
@@ -159,8 +170,9 @@ export default function CreatePage() {
                   </div>
                   {artMode==='studio' ? (
                     <div className="mt-4">
-                      <StampStudio value={svg} onUse={(s)=>{setSvg(s); setOptimized(null); setStats(null);}} />
-                      <div className="mt-3 text-xs text-muted bg-paper-muted border border-line rounded-[2px] px-3 py-2">Studio SVGs are hand-optimized (~1–3 KB) — cheaper than exported files. Click “Use this design” to load.</div>
+                      <StampStudio value={svg} onUse={(s)=>{setSvg(s); setOptimized(null); setStats(null); setJustUsed(true); setTimeout(()=>setJustUsed(false),2500); setStep(2); window.scrollTo({top:0, behavior:'smooth'});}} />
+                      {justUsed && <div className="mt-3 text-xs font-medium text-success bg-success/10 border border-success/20 rounded-[2px] px-3 py-2 flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-success text-white flex items-center justify-center text-[10px]">✓</span> Design applied — viewing in next step. SVG is now on the right preview, continue to distribution.</div>}
+                      <div className="mt-3 text-xs text-muted bg-paper-muted border border-line rounded-[2px] px-3 py-2">Studio SVGs are hand-optimized (~1–3 KB) — cheaper than exported files. Click the badge or “Use this design” to load — auto-advances to next step to view & continue.</div>
                       {/* Live Size & Cost Meter — fancy, fits build */}
                       <div className="mt-3 rounded-[2px] border border-line bg-white p-3">
                         <div className="flex items-center justify-between">
@@ -292,7 +304,7 @@ export default function CreatePage() {
               <div className="text-[10px] uppercase tracking-[0.16em] font-medium text-brand-red">Preview</div>
               <span className="text-xs mono-num text-muted">{new Blob([svgToUse]).size.toLocaleString()} bytes</span>
             </div>
-            <div className="mt-3 h-[270px] sm:h-[290px] flex items-center justify-center p-3 relative overflow-hidden border-t border-line" style={{background:'#FFFBF0'}}>
+            <div className={`mt-3 h-[270px] sm:h-[290px] flex items-center justify-center p-3 relative overflow-hidden border-t transition-all ${justUsed ? 'border-success bg-success/5 ring-1 ring-success/20' : 'border-line'}`} style={{background: justUsed ? '#F0FDF4' : '#FFFBF0'}}>
               <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
               <div className="w-full max-w-[240px] sm:max-w-[250px] aspect-square flex items-center justify-center relative">
                 <div dangerouslySetInnerHTML={{ __html: svgToUse }} className="w-full h-full" />

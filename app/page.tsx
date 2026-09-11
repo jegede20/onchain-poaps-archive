@@ -328,30 +328,31 @@ export default function Home() {
           </div>
         ) : (
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {events.map((e:any)=> (
-              <Link key={e.id} href={`/event/${e.id}`} className="archive-card p-4 hover:shadow-lg hover:border-brand-red/20 transition-all group interactive-card">
-                <div className="aspect-[4/3] rounded-xl bg-paper-muted border border-line overflow-hidden flex items-center justify-center p-4 relative">
+            {events.map((e:any)=> {
+              const dateLabel = e.createdAt ? new Date(Number(e.createdAt)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : e.eventDate ? new Date(Number(e.eventDate)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+              return (
+              <Link key={e.id} href={`/event/${e.id}`} className="group relative rounded-[14px] bg-[#FFFBF0] border border-[#E9DDC8] overflow-hidden flex flex-col items-center p-5 pt-7 hover:shadow-md hover:border-[#DCCBB0] transition-all">
+                <div className="absolute top-3 left-3 w-7 h-7 rounded-full bg-white border border-[#E9DDC8] flex items-center justify-center shadow-sm">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9B2C2C" strokeWidth="1.6"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.2" fill="#9B2C2C" stroke="none"/></svg>
+                </div>
+                <div className="w-[160px] h-[160px] flex items-center justify-center relative">
                   {e.image ? (
-                    <img src={e.image} alt={e.name} className="w-full h-full object-contain p-2" />
+                    <img src={e.image} alt={e.name} className="w-full h-full object-contain drop-shadow-[0_6px_16px_rgba(46,26,15,0.10)] group-hover:scale-[1.02] transition-transform duration-300" />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num text-sm group-hover:scale-105 transition-transform">{String(e.id).padStart(2,'0')}</div>
                   )}
-                  <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-brand-red animate-pulse" />
                 </div>
-                <div className="mt-4">
-                  <div className="font-medium leading-tight group-hover:text-brand-red transition-colors flex items-center gap-2">
-                    {e.name}
-                    {e.isSoulbound && <span className="badge badge-neutral text-[10px] px-2 py-0.5">Soulbound</span>}
-                  </div>
-                  <div className="text-xs text-muted mt-1 line-clamp-2">{e.description || 'No description'}</div>
-                  <div className="mt-3 flex items-center gap-2 text-xs">
-                    <span className={`badge text-[10px] ${e.isPublic ? 'badge-success' : 'badge-neutral'}`}>{e.isPublic ? 'Public' : 'Private'}</span>
-                    <span className="text-muted mono-num">#{e.id} • {e.location || 'Onchain'}</span>
-                  </div>
-                  <div className="mono-num text-[11px] text-muted mt-2 truncate">{e.creator.slice(0,10)}…{e.creator.slice(-6)}</div>
+                <div className="mt-4 text-center w-full">
+                  <div className="font-semibold text-ink text-[15px] leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{e.name}</div>
+                  <div className="text-xs text-muted mt-1">{dateLabel}</div>
+                </div>
+                <div className="w-full h-px bg-[#EDE6D6] mt-4" />
+                <div className="w-full flex items-center justify-between mt-3">
+                  <span className="text-[11px] font-bold tracking-[0.14em] text-[#9B2C2C]">MINT STAMP</span>
+                  <span className="mono-num text-xs text-muted">{String(e.creator).slice(0,6)}…{String(e.creator).slice(-4)}</span>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
         )}
       </div>
@@ -376,22 +377,28 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex gap-4 animate-marquee" style={{width:'max-content', animation:'marquee 28s linear infinite'}}>
-              {marqueeEvents.map((e:any, idx:number)=> (
-                <Link key={`${e.id}-${idx}`} href={`/event/${e.id}`} className="shrink-0 w-[160px] rounded-[2px] border-2 border-line bg-white overflow-hidden hover:border-ink hover:shadow-sm transition-all group">
-                  <div className="h-[140px] flex items-center justify-center p-3 relative" style={{background:'#FFFBF0'}}>
+              {marqueeEvents.map((e:any, idx:number)=> {
+                const dateLabel = e.createdAt ? new Date(Number(e.createdAt)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+                return (
+                <Link key={`${e.id}-${idx}`} href={`/event/${e.id}`} className="shrink-0 w-[190px] rounded-[14px] bg-[#FFFBF0] border border-[#E9DDC8] overflow-hidden flex flex-col items-center p-4 pt-5 hover:border-[#DCCBB0] hover:shadow-sm transition-all group">
+                  <div className="w-[120px] h-[120px] flex items-center justify-center">
                     {e.image ? (
-                      <img src={e.image} alt={e.name} className="w-[120px] h-[120px] object-contain" />
+                      <img src={e.image} alt={e.name} className="w-full h-full object-contain drop-shadow-sm group-hover:scale-[1.02] transition-transform" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-ink text-white flex items-center justify-center mono-num text-xs">{String(e.id).padStart(2,'0')}</div>
                     )}
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-[2px] bg-ink text-white flex items-center justify-center text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">↗</div>
                   </div>
-                  <div className="p-2.5 border-t border-line">
-                    <div className="text-xs font-medium leading-tight line-clamp-1 group-hover:text-brand-red">{e.name}</div>
-                    <div className="text-[11px] text-muted mono-num">#{e.id} • {e.isSoulbound ? 'Soulbound' : 'Transferable'}</div>
+                  <div className="mt-3 text-center w-full">
+                    <div className="text-xs font-semibold leading-tight line-clamp-1 group-hover:text-brand-red">{e.name}</div>
+                    <div className="text-[11px] text-muted mt-0.5">{dateLabel}</div>
+                  </div>
+                  <div className="w-full h-px bg-[#EDE6D6] mt-3" />
+                  <div className="w-full flex items-center justify-between mt-2">
+                    <span className="text-[9px] font-bold tracking-[0.12em] text-[#9B2C2C]">MINT STAMP</span>
+                    <span className="mono-num text-[11px] text-muted">{String(e.creator).slice(0,4)}…{String(e.creator).slice(-3)}</span>
                   </div>
                 </Link>
-              ))}
+              )})}
             </div>
           )}
         </div>

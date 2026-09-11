@@ -150,16 +150,21 @@ export function StampStudio({ onUse, value }: { onUse: (svg: string)=>void, valu
   const estBytes = new Blob([svg]).size;
   return (
     <div className="space-y-4">
-      <div className="archive-card overflow-hidden" style={{borderRadius:'2px'}}>
-        <div className="h-[270px] sm:h-[290px] flex items-center justify-center p-3 relative overflow-hidden" style={{background:'#FFFBF0'}}>
+      <div className="archive-card overflow-hidden group" style={{borderRadius:'2px'}}>
+        <div onClick={()=>onUse(svg)} title="Click to use this design" className="h-[270px] sm:h-[290px] flex items-center justify-center p-3 relative overflow-hidden cursor-pointer hover:bg-[#FFF6E8] transition-colors" style={{background:'#FFFBF0'}}>
           <div className="absolute inset-0 opacity-[0.035]" style={{backgroundImage:'radial-gradient(circle at 1px 1px, #9B2C2C 1px, transparent 0)', backgroundSize:'16px 16px'}} />
-          <div className="w-full max-w-[240px] sm:max-w-[250px] aspect-square flex items-center justify-center p-0 relative">
+          <div className="w-full max-w-[240px] sm:max-w-[250px] aspect-square flex items-center justify-center p-0 relative group-hover:scale-[1.02] transition-transform duration-300">
             <div dangerouslySetInnerHTML={{__html: svg}} className="w-full h-full" />
           </div>
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 backdrop-blur-[1px]">
+            <span className="bg-ink text-white text-xs font-medium px-3 py-1.5 rounded-[2px] shadow-lg flex items-center gap-1.5">
+              <span>✦</span> Use this design →
+            </span>
+          </div>
         </div>
-        <div className="p-3 flex items-center justify-between bg-white border-t border-line">
-          <div className="text-xs mono-num text-muted">{estBytes.toLocaleString()} bytes • ~{estBytes < 3000 ? 'tiny' : estBytes < 6000 ? 'gas-friendly' : 'large'}</div>
-          <button onClick={()=>onUse(svg)} className="ink-button text-xs py-2 px-4 rounded-[2px]">Use this design →</button>
+        <div className="p-0 flex items-stretch bg-white border-t border-line overflow-hidden" style={{borderRadius:'0 0 2px 2px'}}>
+          <div className="flex-1 flex items-center px-3 text-xs mono-num text-muted bg-paper-muted/50">{estBytes.toLocaleString()} bytes • ~{estBytes < 3000 ? 'tiny' : estBytes < 6000 ? 'gas-friendly' : 'large'}</div>
+          <button onClick={()=>onUse(svg)} className="bg-[#9B2C2C] hover:bg-[#7a2222] active:bg-[#651a1a] text-white text-sm font-medium py-3 px-6 rounded-none border-l border-[#9B2C2C] cursor-pointer active:scale-[0.98] transition-colors flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">Use this design →</button>
         </div>
       </div>
 

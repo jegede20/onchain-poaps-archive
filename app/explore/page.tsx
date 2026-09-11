@@ -109,25 +109,27 @@ export default function ExplorePage() {
       ) : (
         <>
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((it:any)=> (
-              <Link key={it.id} href={`/event/${it.id}`} className="archive-card overflow-hidden group interactive-card">
-                <div className="relative bg-paper-muted aspect-[4/3] flex items-center justify-center overflow-hidden">
-                  {it.image ? <img src={it.image} alt={it.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" /> : <div className="w-20 h-20 rounded-2xl bg-white border border-line flex items-center justify-center font-medium mono-num shadow-sm">{String(it.id).padStart(2,'0')}</div>}
-                  <div className="absolute top-3 left-3 flex gap-1.5">
-                    <span className="badge badge-brass text-[10px]">#{String(it.id).padStart(4,'0')}</span>
-                    {it.isPublic ? <span className="badge badge-success text-[10px]">Public</span> : it.hasAllowlist ? <span className="badge badge-info text-[10px]">Allowlist</span> : <span className="badge badge-warn text-[10px]">QR claim</span>}
-                  </div>
-                  {it.isSoulbound && <div className="absolute top-3 right-3 badge badge-neutral text-[10px]">Soulbound</div>}
+            {filtered.map((it:any)=> {
+              const dateLabel = it.createdAt ? new Date(Number(it.createdAt)*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+              return (
+              <Link key={it.id} href={`/event/${it.id}`} className="group relative rounded-[14px] bg-[#FFFBF0] border border-[#E9DDC8] overflow-hidden flex flex-col items-center p-5 pt-7 hover:shadow-md hover:border-[#DCCBB0] transition-all">
+                <div className="absolute top-3 left-3 w-7 h-7 rounded-full bg-white border border-[#E9DDC8] flex items-center justify-center shadow-sm">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9B2C2C" strokeWidth="1.6"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.2" fill="#9B2C2C" stroke="none"/></svg>
                 </div>
-                <div className="p-4">
-                  <div className="font-medium leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{it.name}</div>
-                  <div className="text-xs text-muted line-clamp-2 mt-1">{it.description || 'No description'}</div>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-muted mono-num">
-                    <span>{it.location || 'Onchain'}</span><span>•</span><span>{it.creator.slice(0,6)}…{it.creator.slice(-4)}</span>
-                  </div>
+                <div className="w-[160px] h-[160px] flex items-center justify-center">
+                  {it.image ? <img src={it.image} alt={it.name} className="w-full h-full object-contain drop-shadow-[0_6px_16px_rgba(46,26,15,0.10)] group-hover:scale-[1.02] transition-transform duration-300" /> : <div className="w-16 h-16 rounded-full bg-ink text-paper flex items-center justify-center font-medium mono-num">{String(it.id).padStart(2,'0')}</div>}
+                </div>
+                <div className="mt-4 text-center w-full">
+                  <div className="font-semibold text-ink text-[15px] leading-tight line-clamp-1 group-hover:text-brand-red transition-colors">{it.name}</div>
+                  <div className="text-xs text-muted mt-1">{dateLabel}</div>
+                </div>
+                <div className="w-full h-px bg-[#EDE6D6] mt-4" />
+                <div className="w-full flex items-center justify-between mt-3">
+                  <span className="text-[11px] font-bold tracking-[0.14em] text-[#9B2C2C]">MINT STAMP</span>
+                  <span className="mono-num text-xs text-muted">{it.creator.slice(0,6)}…{it.creator.slice(-4)}</span>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
           {show < totalNum+1 && <button onClick={()=>setShow(s=>s+24)} className="mt-8 mx-auto block ghost-button hover:border-brand-red">Load more</button>}
         </>
