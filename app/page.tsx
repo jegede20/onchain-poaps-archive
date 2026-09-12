@@ -66,10 +66,78 @@ function useEvents(limit=6) {
   return { totalNum, events, ids };
 }
 
+function useMarqueeEvents() {
+  const [marquee, setMarquee] = useState<any[]>([]);
+  useEffect(()=>{
+    let cancelled=false;
+    (async()=>{
+      try{
+        const res=await fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:"0xba870686"},"latest"]})});
+        const j=await res.json();
+        const total=parseInt(j.result,16);
+        if(!Number.isFinite(total) || total<0) return;
+        const ids=Array.from({length: total+1}, (_,i)=> total - i).filter(n=>n>=0);
+        // fetch events+uris in batches of 6 to avoid 429
+        const selEvent="0x0b791430";
+        const selUri="0x0e89341c";
+        const pad=(n:number)=> n.toString(16).padStart(64,'0');
+        // dynamic import viem decode to avoid SSR issues
+        const { decodeFunctionResult } = await import('viem');
+        const out:any[]=[];
+        for(let i=0;i<ids.length;i+=6){
+          const slice=ids.slice(i,i+6);
+          const batch=await Promise.all(slice.map(async(id)=>{
+            try{
+              const [evRes, uriRes]=await Promise.all([
+                fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:selEvent+pad(id)},"latest"]})}),
+                fetch("https://sepolia.base.org",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:POAP_ADDRESS,data:selUri+pad(id)},"latest"]})}),
+              ]);
+              const evJ=await evRes.json();
+              const uriJ=await uriRes.json();
+              const evHex=evJ.result as string;
+              const uriHex=uriJ.result as string;
+              if(!evHex||evHex==="0x"||evHex.length<10) return null;
+              let decoded:any=null;
+              try{ decoded=decodeFunctionResult({ abi: POAP_ABI as any, functionName:'events', data: evHex as `0x${string}` }) as any; }catch{}
+              if(!decoded) return null;
+              let uriStr:string|undefined;
+              if(uriHex && uriHex!=="0x"){
+                try{
+                  const d=decodeFunctionResult({ abi: POAP_ABI as any, functionName:'uri', data: uriHex as `0x${string}` }) as any;
+                  uriStr=d as string;
+                }catch{
+                  // fallback manual parse
+                  try{
+                    const lenHex=uriHex.slice(2+64,2+128); const len=parseInt(lenHex,16);
+                    if(Number.isFinite(len)&&len>0){
+                      const dataHex=uriHex.slice(2+128,2+128+len*2);
+                      const bytes=Uint8Array.from(dataHex.match(/.{1,2}/g)!.map(b=>parseInt(b,16)));
+                      uriStr=new TextDecoder().decode(bytes);
+                    }
+                  }catch{}
+                }
+              }
+              const dec=uriStr ? decodeUri(uriStr) : null;
+              const image=dec?.image || null;
+              return { id, name: decoded[0], description: decoded[1], eventDate: decoded[2], location: decoded[3], allowlistRoot: decoded[4], svgImage: decoded[5], creator: decoded[6], createdAt: decoded[7], externalUrl: decoded[8], isSoulbound: decoded[9], isPublic: decoded[10], decoded: dec, image };
+            }catch{ return null; }
+          }));
+          for(const b of batch) if(b) out.push(b);
+          if(!cancelled) setMarquee([...out]);
+        }
+      }catch{}
+    })();
+    const iv=setInterval(()=>{ /* keep live - re-fetch occasionally */ }, 15000);
+    return ()=>{ cancelled=true; clearInterval(iv); };
+  },[]);
+  return marquee;
+}
+
 export default function Home() {
   const { totalNum, events } = useEvents(6);
   const latest = events[0] as any | undefined;
-  const marqueeEvents = events.length>0 ? [...events, ...events] : [];
+  const marqueeRaw = useMarqueeEvents();
+  const marqueeEvents = marqueeRaw.length>0 ? [...marqueeRaw, ...marqueeRaw] : [];
   return (
     <div className="flex-1">
       {/* Hero - Archive lobby - not too tall, heading wide + distinct background */}
@@ -365,7 +433,7 @@ export default function Home() {
               <div className="text-[10px] tracking-[0.16em] uppercase font-medium text-brand-red">Onchain canvas</div>
               <h2 className="mt-1 font-display text-xl sm:text-2xl font-medium tracking-tight leading-none">Art stays onchain — not a link</h2>
             </div>
-            <Link href="/gallery" className="text-sm font-medium text-ink border border-line bg-white px-3 py-1.5 rounded-[2px] hover:border-ink transition-colors">Open Gallery →</Link>
+            <Link href="/explore" className="text-sm font-medium text-ink border border-line bg-white px-3 py-1.5 rounded-[2px] hover:border-ink transition-colors">Open Explore →</Link>
           </div>
         </div>
         <div className="relative overflow-hidden pb-8">
