@@ -1,6 +1,7 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useState, useMemo, useEffect } from 'react';
+import { useAccount, useChainId, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useReadContracts } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
 import { POAP_ABI, POAP_ADDRESS, getFlags, decodeContractError } from '@/lib/poap';
 import { optimizeSvg, estimateGas, formatGasCost } from '@/lib/svg-optimizer';
 import { StampStudio } from '@/components/StampStudio';
@@ -40,7 +41,9 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200
 </svg>`;
 
 export default function CreatePage() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
   const [step, setStep] = useState(1);
   const [artMode, setArtMode] = useState<'studio'|'paste'>('studio');
   const [name, setName] = useState('');
@@ -56,15 +59,106 @@ export default function CreatePage() {
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [justUsed, setJustUsed] = useState(false);
+  const [fallbackEventId, setFallbackEventId] = useState<number | null>(null);
 
-  const { data: hash, writeContract, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { data: hash, writeContractAsync, isPending, error: writeError } = useWriteContract();
+  const { data: receipt, isLoading: isConfirming, isSuccess: receiptIsSuccess, isError: receiptIsError, error: receiptError } = useWaitForTransactionReceipt({ hash, chainId: baseSepolia.id, query: { enabled: !!hash } } as any);
 
-  const doOptimize = () => {
-    const { optimized: opt, stats: st } = optimizeSvg(svg);
-    setOptimized(opt);
-    setStats(st);
-  };
+  // surface wagmi errors via our banner (without breaking UI)
+  useEffect(() => {
+    if (writeError) setError(decodeContractError(writeError));
+  }, [writeError]);
+  useEffect(() => {
+    if (receiptIsError && receiptError) setError(decodeContractError(receiptError));
+    if (receipt && (receipt as any).status === 'reverted') setError('Transaction reverted onchain — check name/description/flags or gas. View on BaseScan for details.');
+  }, [receiptIsError, receiptError, receipt]);
+
+  // fallback: if wagmi polling stalls (rate-limited RPC), poll eth_getTransactionReceipt ourselves and parse NewEvent id
+  useEffect(() => {
+    if (!hash) return;
+    if (receiptIsSuccess) return;
+    let cancelled = false;
+    let tries = 0;
+    const iv = setInterval(async () => {
+      if (cancelled || tries++ > 25) { clearInterval(iv); return; }
+      try {
+        const r = await fetch('https://sepolia.base.org', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getTransactionReceipt', params: [hash] }) });
+        const j = await r.json();
+        const rec = j.result;
+        if (rec && rec.status === '0x1') {
+          // parse NewEvent log to get eventId (only reliable if contract emitted)
+          try {
+            const newEventTopic = '0x6919a91d7b24adca72543da0d0d1d5836bfbe1014d3d8b6652f3dd7ef3f3c0b0' as string; // keccak may differ; fallback to first log
+            const logs: any[] = rec.logs || [];
+            // fallback: take eventId from log data if possible, else use totalEvents
+            for (const log of logs) {
+              if (log.address?.toLowerCase() === POAP_ADDRESS.toLowerCase() && log.topics?.length >= 2) {
+                const idHex = log.topics[1];
+                const id = parseInt(idHex, 16);
+                if (Number.isFinite(id) && id > 0) { if (!cancelled) setFallbackEventId(id); break; }
+              }
+            }
+          } catch {}
+          if (!cancelled) clearInterval(iv);
+        }
+      } catch {}
+    }, 3000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [hash, receiptIsSuccess]);
+
+  // detect first POAP for this creator (for differentiated success copy)
+  const [isFirst, setIsFirst] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!address) { setIsFirst(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        // quick check: fetch total then scan last 12 events for creator match
+        const res = await fetch('https://sepolia.base.org', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: POAP_ADDRESS, data: '0xba870686' }, 'latest'] }) });
+        const j = await res.json();
+        const total = parseInt(j.result || '0x0', 16);
+        if (!total) { if (!cancelled) setIsFirst(true); return; }
+        const sel = '0x0b791430';
+        let found = false;
+        const checkIds = Array.from({ length: Math.min(total + 1, 20) }, (_, i) => total - i).filter((n) => n > 0);
+        for (let i = 0; i < checkIds.length; i += 6) {
+          const slice = checkIds.slice(i, i + 6);
+          const results = await Promise.all(slice.map(async (id) => {
+            const data = sel + id.toString(16).padStart(64, '0');
+            try {
+              const rr = await fetch('https://sepolia.base.org', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: POAP_ADDRESS, data }, 'latest'] }) });
+              const jj = await rr.json();
+              const hex = jj.result as string;
+              if (!hex || hex === '0x') return null;
+              // creator is 7th output (index 6) — decode loosely: hex contains address at known offset
+              // fallback: simple contains check for address in hex
+              return hex.toLowerCase().includes(address.toLowerCase().slice(2));
+            } catch { return null; }
+          }));
+          if (results.some(Boolean)) { found = true; break; }
+        }
+        if (!cancelled) setIsFirst(!found);
+      } catch { if (!cancelled) setIsFirst(null); }
+    })();
+    return () => { cancelled = true; };
+  }, [address]);
+
+  // parse eventId from receipt logs when wagmi succeeds
+  const successEventId = useMemo(() => {
+    if (fallbackEventId) return fallbackEventId;
+    if (!receipt || !(receipt as any).logs) return null;
+    try {
+      const logs: any[] = (receipt as any).logs;
+      for (const log of logs) {
+        if (log.address?.toLowerCase() === POAP_ADDRESS.toLowerCase() && log.topics?.length >= 2) {
+          const id = parseInt(log.topics[1], 16);
+          if (Number.isFinite(id) && id > 0) return id;
+        }
+      }
+    } catch {}
+    return null;
+  }, [receipt, fallbackEventId]);
+
   const svgToUse = optimized || svg;
   const gas = useMemo(()=> estimateGas(new Blob([svgToUse]).size), [svgToUse]);
 
@@ -73,6 +167,15 @@ export default function CreatePage() {
 
   const handleRegister = async () => {
     setError(null);
+    // enforce Base Sepolia chain
+    if (chainId !== baseSepolia.id) {
+      try {
+        await switchChainAsync({ chainId: baseSepolia.id });
+      } catch (e: any) {
+        setError('Please switch to Base Sepolia (chain 84532) in your wallet and try again.');
+        return;
+      }
+    }
     const safeName = name.replace(/\n/g,' ').replace(/"/g,"'");
     const safeDesc = description.replace(/\n/g,' ').replace(/"/g,"'");
     const safeLoc = location.replace(/\n/g,' ').replace(/"/g,"'");
@@ -80,38 +183,67 @@ export default function CreatePage() {
     const flags = getFlags(isPublic, isSoulbound);
     let dateVal = 0;
     if (eventDate) dateVal = Math.floor(new Date(eventDate).getTime()/1000);
+    // pre-validate
+    if (!safeName.trim() || safeName.length > 128) { setError('Name must be 1-128 characters.'); return; }
+    if (safeDesc.length > 512) { setError('Description must be ≤512 characters.'); return; }
+    if (safeLoc.length > 128) { setError('Location must be ≤128 characters.'); return; }
+    if (safeUrl.length > 128) { setError('External URL must be ≤128 characters.'); return; }
+    if (!svgToUse.trim()) { setError('SVG artwork is required.'); return; }
+    if (new Blob([svgToUse]).size > 120 * 1024) { setError('SVG too large (>120KB) — optimize or shrink before registering.'); return; }
     try {
-      writeContract({
+      await writeContractAsync({
         address: POAP_ADDRESS,
         abi: POAP_ABI,
         functionName: 'registerEvent',
         args: [safeName, safeDesc, BigInt(dateVal), safeLoc, allowlistRoot as `0x${string}`, svgToUse, safeUrl, flags],
-      });
-    } catch (e:any) { setError(decodeContractError(e)); }
+        chainId: baseSepolia.id,
+      } as any);
+    } catch (e:any) {
+      // writeContractAsync throws on user reject or validation
+      if (e?.message?.includes('User rejected') || e?.message?.includes('rejected')) return; // silent on cancel
+      setError(decodeContractError(e));
+    }
   };
 
-  if (isSuccess && hash) {
+  const isTxSuccess = (receiptIsSuccess && (receipt as any)?.status === 'success') || (fallbackEventId !== null);
+  const showSuccess = (isTxSuccess && !!hash) || (receiptIsSuccess && !!hash && (receipt as any)?.status !== 'reverted');
+
+  if (showSuccess && hash) {
+    const first = isFirst === true;
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 text-center">
-        {/* Minted badge — our own build design, large centered like screenshot */}
+        {/* Minted badge — our build design, large centered */}
         <div className="mx-auto w-[300px] sm:w-[360px] aspect-square flex items-center justify-center relative">
           <div className="absolute inset-0 rounded-full opacity-[0.04]" style={{background:'radial-gradient(circle at center, #9B2C2C 1px, transparent 1px)', backgroundSize:'14px 14px'}} />
           <div dangerouslySetInnerHTML={{ __html: svgToUse }} className="w-full h-full relative drop-shadow-[0_8px_24px_rgba(46,26,15,0.12)]" />
         </div>
-        <h2 className="mt-8 font-display text-[26px] sm:text-[30px] font-bold tracking-[-0.015em] leading-tight text-ink">
-          “{name || 'FIST'}” is live onchain <span className="inline-block translate-y-[1px]">🎉</span>
+        <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFFBF0] border border-[#E9DDC8] text-xs font-medium text-[#2E1A0F]"><span className="w-2 h-2 rounded-full bg-[#2ecc71] animate-pulse" /> Onchain confirmed</div>
+        <h2 className="mt-4 font-display text-[26px] sm:text-[30px] font-bold tracking-[-0.015em] leading-tight text-ink">
+          {first ? 'You created your first POAP — welcome!' : `“${name || 'FIST'}” is live onchain`} <span className="inline-block translate-y-[1px]">🎉</span>
         </h2>
         <p className="mt-3 text-[14px] sm:text-[15px] text-muted leading-6 max-w-xl mx-auto">
-          POAP is registered forever on Base Sepolia. Artwork and metadata are stored fully onchain.
+          {first ? 'Your first proof is registered forever on Base Sepolia. Artwork and metadata are 100% onchain via SSTORE2.' : 'POAP is registered forever on Base Sepolia. Artwork and metadata are stored fully onchain.'}
         </p>
-        <p className="mt-2 text-xs mono-num text-muted/70 break-all">tx {hash.slice(0,10)}…{hash.slice(-8)}</p>
+        {successEventId ? <p className="mt-2 text-xs mono-num text-muted">Event #{successEventId} • tx {hash.slice(0,10)}…{hash.slice(-8)}</p> : <p className="mt-2 text-xs mono-num text-muted/70 break-all">tx {hash.slice(0,10)}…{hash.slice(-8)}</p>}
+        {successEventId ? <p className="mt-1 text-xs text-muted">View your POAP design and details below — now discoverable in Explore & Gallery.</p> : null}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/gallery" className="px-6 py-3 rounded-[2px] bg-[#9B2C2C] text-white text-sm font-medium shadow-[0_4px_14px_rgba(155,44,44,0.35)] hover:bg-[#7a2222] transition-colors border border-[#9B2C2C]">
-            Go to Gallery
+            View in Gallery
           </Link>
+          {successEventId ? <Link href={`/event/${successEventId}`} className="px-6 py-3 rounded-[2px] bg-white border-2 border-line text-sm font-medium hover:border-ink hover:bg-paper-muted transition-colors text-ink">Open event page →</Link> : null}
           <a href={`https://sepolia.basescan.org/tx/${hash}`} target="_blank" rel="noreferrer" className="px-6 py-3 rounded-[2px] bg-white border-2 border-line text-sm font-medium hover:border-brand-red/30 hover:bg-paper-muted transition-colors text-ink">
-            View on Base →
+            Check on BaseScan →
           </a>
+        </div>
+        <div className="mt-8 archive-inset p-4 text-left max-w-xl mx-auto">
+          <div className="text-xs uppercase tracking-[0.12em] font-medium text-muted">Your POAP details</div>
+          <div className="mt-3 grid gap-2.5 text-sm">
+            <div className="flex justify-between gap-4"><span className="text-muted">Name</span><span className="font-medium text-ink truncate">{name || '—'}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-muted">Description</span><span className="text-ink truncate max-w-[60%]">{description || '—'}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-muted">Location</span><span className="text-ink">{location || '—'}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-muted">Flags</span><span className="mono-num text-ink">{getFlags(isPublic,isSoulbound)} • {isPublic ? 'Public' : 'Private'} • {isSoulbound ? 'Soulbound' : 'Transferable'}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-muted">SVG</span><span className="mono-num text-ink">{new Blob([svgToUse]).size.toLocaleString()} bytes</span></div>
+          </div>
         </div>
       </div>
     );
@@ -284,13 +416,21 @@ export default function CreatePage() {
                     </div>
                     <div className="mt-3 text-xs text-muted border-t border-line pt-3">Newlines and quotes in name/description will be sanitized to avoid breaking onchain metadata. SVG is stored Base64 via SSTORE2.</div>
                   </div>
+                  {chainId !== baseSepolia.id && isConnected && <div className="text-sm text-warn bg-warn-bg border border-amber-200 rounded-[2px] px-4 py-3">Wrong network — you’re on chain {chainId}. We’ll switch to Base Sepolia (84532) when you click Register, or <button onClick={() => switchChainAsync({ chainId: baseSepolia.id }).catch(()=>{})} className="underline font-medium">switch now</button>.</div>}
                   {!isConnected && <div className="text-sm text-warn bg-warn-bg border border-amber-200 rounded-[2px] px-4 py-3">Connect your wallet to register on Base Sepolia.</div>}
+                  {hash && !isTxSuccess && (
+                    <div className="text-sm bg-[#FFFBF0] border border-[#E9DDC8] rounded-[2px] px-4 py-3">
+                      <div className="font-medium text-ink flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> Transaction sent — confirming…</div>
+                      <div className="text-xs mono-num text-muted mt-1.5 break-all">tx {hash.slice(0,10)}…{hash.slice(-8)} • <a href={`https://sepolia.basescan.org/tx/${hash}`} target="_blank" rel="noreferrer" className="underline">view on BaseScan</a></div>
+                      <div className="text-xs text-muted mt-1.5">If this hangs, check BaseScan — your POAP may already be confirmed and will appear in Gallery/Explore within seconds.</div>
+                    </div>
+                  )}
                   {error && <div className="text-sm text-danger bg-danger-bg border border-red-200 rounded-[2px] px-4 py-3">{error}</div>}
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-line/60">
                   <button onClick={()=>setStep(2)} className="ghost-button rounded-[2px]">← Back</button>
                   <button onClick={handleRegister} disabled={!isConnected || !canStep3 || isPending || isConfirming} className="ink-button disabled:opacity-40 rounded-[2px]">
-                    {isPending ? 'Confirm in wallet…' : isConfirming ? 'Confirming…' : 'Register Onchain →'}
+                    {isPending ? 'Confirm in wallet…' : isConfirming ? 'Confirming onchain…' : chainId !== baseSepolia.id ? 'Switch & Register →' : 'Register Onchain →'}
                   </button>
                 </div>
               </div>
