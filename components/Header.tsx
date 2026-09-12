@@ -37,7 +37,6 @@ export function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/create" className="hidden sm:inline-flex brass-button text-sm">New POAP</Link>
           <ConnectButton.Custom>
             {({ account, chain, openAccountModal, openConnectModal, openChainModal, mounted }) => {
               const ready = mounted;
